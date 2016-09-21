@@ -1,0 +1,22 @@
+var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}return function(Constructor,protoProps,staticProps){if(protoProps)defineProperties(Constructor.prototype,protoProps);if(staticProps)defineProperties(Constructor,staticProps);return Constructor;};}();function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}import store from'./storage';function deepClone(obj){var _obj=JSON.parse(JSON.stringify(obj));return _obj;}function normalizeChannel(channel,func){if(!/^(memory|local|session)$/.test(channel)){throw new Error('Invalid storage mechanism sent to StorageController.'+func);}/* istanbul ignore if: we aren't testing on the server yet */if(typeof window==='undefined'){return'memory';}return channel;}/**\
+
+    title: StorageController
+    category: service
+    description:
+        This singleton handles building a snapshot of generated state
+        on the server, and handles pushing that state around the client.
+        It only works with basic objects.
+    todos:
+        There still needs to be a mechanism for the initial data to refresh
+        the data of the client if localStorage gets stale or something.
+
+\**/var StorageController=function(){function StorageController(){_classCallCheck(this,StorageController);if(typeof window==='undefined'||!window.StorageController){return;}try{var initial=JSON.parse(window.StorageController);if(Object.prototype.toString.call(initial)!=='[object Object]'){throw new Error('invalid type');}var memory=initial.memory||{},local=initial.local||{},session=initial.session||{};var ni=void 0;for(ni in memory){this.populate('memory',ni,memory[ni],true);}for(ni in local){this.populate('local',ni,local[ni],true);}for(ni in session){this.populate('session',ni,session[ni],true);}}catch(e){throw new Error('Invalid string passed through window.StorageController');}}// use this function to register callbacks to the data being changed
+_createClass(StorageController,[{key:'register',value:function register(channel,key,cb){var _channel=normalizeChannel(channel,'register'),events=store.memory.get('events')||{},data=store[_channel].get('data')||{};if(typeof cb!=='function'){return;}if(!events.hasOwnProperty(key)){events[key]=[];}events[key].push(cb);store.memory.set('events',events);if(data.hasOwnProperty(key)){cb(deepClone(data[key]));}}// push some data. this will trigger any callbacks attached
+// to the key, passing a clone of the new data as the first param
+},{key:'populate',value:function populate(channel,key,data){var ignoreFresh=arguments.length<=3||arguments[3]===undefined?false:arguments[3];var _channel=normalizeChannel(channel,'populate'),events=store.memory.get('events')||{},fresh=store[_channel].get('fresh')||{},_data=store[_channel].get('data')||{};var ni=void 0;if(!ignoreFresh){fresh[key]=Date.now();}_data[key]=deepClone(data);store[_channel].set('data',_data);store[_channel].set('fresh',fresh);if(!events.hasOwnProperty(key)){return;}for(ni=0;ni<events[key].length;ni++){events[key][ni](deepClone(data));}}// grab some datas
+},{key:'get',value:function get(channel,key){var _channel=normalizeChannel(channel,'get'),data=store[_channel].get('data')||{};return deepClone(data[key]||{});}// check on the last time the data was updated
+},{key:'freshness',value:function freshness(channel,key){var _channel=normalizeChannel(channel,'freshness'),data=store[_channel].get('fresh')||{};return data[key]||0;}// takes a snapshot of the current state
+},{key:'_out',value:function _out(){return JSON.stringify({memory:store.memory.get('data')||{},local:store.local.get('data')||{},session:store.session.get('data')||{}});}// use this function for generating the string you pump into
+// a script tag on the server side
+},{key:'out',value:function out(){var outStr=this._out().replace(/\n/g,'\\n').replace(/\\n/g,'\\\\n').replace(/'/g,'\\\'');return'window.StorageController = \''+outStr+'\';';}}]);return StorageController;}();// we use a singleton once so we don't have to use it elsewhere
+var outer=new StorageController();/* istanbul ignore else: no one cares */if(typeof window!=='undefined'){window.StorageController=outer;}export{StorageController};export default outer;
