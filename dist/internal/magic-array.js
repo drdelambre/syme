@@ -1,4 +1,4 @@
-/**\
+'use strict';Object.defineProperty(exports,"__esModule",{value:true});/**\
 
     MagicArray
         extends in place array operations to inject
@@ -18,4 +18,4 @@ Array.prototype.shift.apply(this);this._throttle.add(this._param,{old:old,new:th
 }}// do some validation here
 out=Array.prototype.unshift.apply(this,args);this._throttle.add(this._param,{old:old,new:this.slice(0)});this._def.value=this;return out;};MagicArray.prototype.splice=function(){var old=this.slice(0),ni;for(var _len3=arguments.length,args=Array(_len3),_key3=0;_key3<_len3;_key3++){args[_key3]=arguments[_key3];}if(this._def.type&&args.length>2){for(ni=2;ni<args.length;ni++){if(args[ni]instanceof this._def.type){continue;}args[ni]=new this._def.type(args[ni]);// eslint-disable-line
 }}// do some validation here
-Array.prototype.splice.apply(this,args);this._throttle.add(this._param,{old:old,new:this.slice(0)});this._def.value=this;return this;};MagicArray.prototype.concat=function(){for(var _len4=arguments.length,args=Array(_len4),_key4=0;_key4<_len4;_key4++){args[_key4]=arguments[_key4];}return Array.prototype.concat.apply(this.slice(0),args);};export default MagicArray;
+Array.prototype.splice.apply(this,args);this._throttle.add(this._param,{old:old,new:this.slice(0)});this._def.value=this;return this;};MagicArray.prototype.concat=function(){for(var _len4=arguments.length,args=Array(_len4),_key4=0;_key4<_len4;_key4++){args[_key4]=arguments[_key4];}return Array.prototype.concat.apply(this.slice(0),args);};exports.default=MagicArray;

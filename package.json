@@ -1,6 +1,6 @@
 {
   "name": "syme",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A model set for allowing you to share data contracts between your view and the rest of your application, take your props on the go",
   "author": "Alex Boatwright <drdelambre@gmail.com>",
   "repository": {
@@ -71,10 +71,7 @@
   "babel": {
     "presets": [
       [
-        "es2015",
-        {
-          "modules": false
-        }
+        "es2015"
       ],
       "react",
       "stage-0"
