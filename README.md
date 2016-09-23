@@ -294,7 +294,7 @@ export default resolve({
 
 follow that project's instructions for rendering on the server, and then make sure to output the server's state to the client so that no additional fetch is required to build the client state. You can do this by pumping the string rendered from `StorageController.out()` into an empty script tag on the page:
 ```Javascript
-import StorageController from 'front/internal/storage-controller';
+import StorageController from 'syme/dist/internal/storage-controller';
 
 app.use((req, resp) => {
     match({
