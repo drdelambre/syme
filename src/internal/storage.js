@@ -49,10 +49,36 @@ function generateMemoryStore() {
 
         return {
             get(key) {
-                return getNamespace('ServerState').get(key);
+                const namespace = getNamespace('ServerState');
+
+                if (!namespace.get) {
+                    throw new Error([
+                        '',
+                        'Server misconfigured:',
+                        '\tPlease make sure to create the namespace before using the',
+                        '\tcache system on the server.',
+                        '\thttps://github.com/drdelambre/syme#cache-serverside',
+                        ''
+                    ].join('\n'));
+                }
+
+                return namespace.get(key);
             },
             set(key, val) {
-                return getNamespace('ServerState').set(key, val);
+                const namespace = getNamespace('ServerState');
+
+                if (!namespace.set) {
+                    throw new Error([
+                        '',
+                        'Server misconfigured:',
+                        '\tPlease make sure to create the namespace before using the',
+                        '\tcache system on the server.',
+                        '\thttps://github.com/drdelambre/syme#cache-serverside',
+                        ''
+                    ].join('\n'));
+                }
+
+                return namespace.set(key, val);
             },
             clear() {}
         };
