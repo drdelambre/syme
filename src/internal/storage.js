@@ -42,8 +42,8 @@ function testForSessionStorage() {
     }
 }
 
-function generateMemoryStore() {
-    /* istanbul ignore if: not testing server yet */
+function generateMemoryStore(channel = 'memory') {
+    /* istanbul ignore next: not testing server yet */
     if (typeof window === 'undefined' || !window.document) {
         const getNamespace = require('continuation-local-storage').getNamespace;
 
@@ -55,30 +55,34 @@ function generateMemoryStore() {
                     throw new Error([
                         '',
                         'Server misconfigured:',
-                        '\tPlease make sure to create the namespace before using the',
-                        '\tcache system on the server.',
+                        '\tPlease make sure to create the namespace before',
+                        '\tusing the cache system on the server.',
                         '\thttps://github.com/drdelambre/syme#cache-serverside',
                         ''
                     ].join('\n'));
                 }
 
-                return namespace.get(key);
+                return (namespace.get(channel) || {})[key];
             },
             set(key, val) {
                 const namespace = getNamespace('ServerState');
 
-                if (!namespace.set) {
+                if (!namespace.get) {
                     throw new Error([
                         '',
                         'Server misconfigured:',
-                        '\tPlease make sure to create the namespace before using the',
-                        '\tcache system on the server.',
+                        '\tPlease make sure to create the namespace before',
+                        '\tusing the cache system on the server.',
                         '\thttps://github.com/drdelambre/syme#cache-serverside',
                         ''
                     ].join('\n'));
                 }
 
-                return namespace.set(key, val);
+                const oldData = namespace.get(channel) || {};
+
+                oldData[key] = val;
+
+                return namespace.set(channel, oldData);
             },
             clear() {}
         };
@@ -103,56 +107,58 @@ function generateMemoryStore() {
     };
 }
 
-function generateSessionStore() {
-    /* istanbul ignore else: this always returns true on phantom */
-    if (testForSessionStorage()) {
-        return {
-            get(key) {
-                const val = window.sessionStorage.getItem(key);
-
-                if (val) {
-                    return JSON.parse(val);
-                }
-
-                return null;
-            },
-            set(key, val) {
-                window.sessionStorage.setItem(key, JSON.stringify(val));
-            },
-            clear() {
-                window.sessionStorage.clear();
-            }
-        };
+/* istanbul ignore next */
+function generateSessionStore(channel = 'session') {
+    /* istanbul ignore if: this always returns true on phantom */
+    if (!testForSessionStorage()) {
+        /* istanbul ignore next: we can assume this is safe? */
+        return generateMemoryStore(channel);
     }
 
-    /* istanbul ignore next: we can assume this is safe? */
-    return generateMemoryStore();
+    return {
+        get(key) {
+            const val = window.sessionStorage.getItem(key);
+
+            if (val) {
+                return JSON.parse(val);
+            }
+
+            return null;
+        },
+        set(key, val) {
+            window.sessionStorage.setItem(key, JSON.stringify(val));
+        },
+        clear() {
+            window.sessionStorage.clear();
+        }
+    };
 }
 
-function generateLocalStore() {
-    /* istanbul ignore else: this always returns true on phantom */
-    if (testForLocalStorage()) {
-        return {
-            get(key) {
-                const val = window.localStorage.getItem(key);
-
-                if (val) {
-                    return JSON.parse(val);
-                }
-
-                return null;
-            },
-            set(key, val) {
-                window.localStorage.setItem(key, JSON.stringify(val));
-            },
-            clear() {
-                window.localStorage.clear();
-            }
-        };
+/* istanbul ignore next */
+function generateLocalStore(channel = 'local') {
+    /* istanbul ignore if: this always returns true on phantom */
+    if (!testForLocalStorage()) {
+        /* istanbul ignore next: we can assume this is safe? */
+        return generateSessionStore(channel);
     }
 
-    /* istanbul ignore next: we can assume this is safe? */
-    return generateSessionStore();
+    return {
+        get(key) {
+            const val = window.localStorage.getItem(key);
+
+            if (val) {
+                return JSON.parse(val);
+            }
+
+            return null;
+        },
+        set(key, val) {
+            window.localStorage.setItem(key, JSON.stringify(val));
+        },
+        clear() {
+            window.localStorage.clear();
+        }
+    };
 }
 
 const storage = {
