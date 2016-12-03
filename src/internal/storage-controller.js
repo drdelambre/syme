@@ -43,31 +43,75 @@ class StorageController {
         try {
             const initial = JSON.parse(window.StorageController);
 
-            if (Object.prototype.toString.call(initial) !== '[object Object]') {
+            if (
+                Object.prototype.toString.call(initial) !== '[object Object]'
+            ) {
                 throw new Error('invalid type');
             }
 
-            const memory = initial.memory || {},
-                local = initial.local || {},
-                session = initial.session || {};
-            let ni;
+            setTimeout(this._pruneCache.bind(this, () => {
+                const memory = initial.memory || {},
+                    local = initial.local || {},
+                    session = initial.session || {};
+                let ni;
 
-            for (ni in memory) {
-                this.populate('memory', ni, memory[ni], true);
-            }
+                for (ni in memory) {
+                    this.populate('memory', ni, 0, memory[ni], true);
+                }
 
-            for (ni in local) {
-                this.populate('local', ni, local[ni], true);
-            }
+                for (ni in local) {
+                    this.populate('local', ni, 0, local[ni], true);
+                }
 
-            for (ni in session) {
-                this.populate('session', ni, session[ni], true);
-            }
+                for (ni in session) {
+                    this.populate('session', ni, 0, session[ni], true);
+                }
+            }), 0);
         } catch (e) {
             throw new Error(
                 'Invalid string passed through window.StorageController'
             );
         }
+    }
+
+    _pruneCache(cb) {
+        const now = Date.now(),
+            freshMem = store.memory.get('fresh') || {},
+            freshLocal = store.local.get('fresh') || {},
+            freshSesh = store.session.get('fresh') || {};
+        let ni;
+
+        for (ni in freshMem) {
+            if (
+                Object.prototype.toString
+                    .call(freshMem[ni]) !== '[object Object]' ||
+                freshMem[ni].expires < now
+            ) {
+                this.remove('memory', ni);
+            }
+        }
+
+        for (ni in freshLocal) {
+            if (
+                Object.prototype.toString
+                    .call(freshLocal[ni]) !== '[object Object]' ||
+                freshLocal[ni].expires < now
+            ) {
+                this.remove('local', ni);
+            }
+        }
+
+        for (ni in freshSesh) {
+            if (
+                Object.prototype.toString
+                    .call(freshSesh[ni]) !== '[object Object]' ||
+                freshSesh[ni].expires < now
+            ) {
+                this.remove('session', ni);
+            }
+        }
+
+        cb();
     }
 
     // use this function to register callbacks to the data being changed
@@ -94,7 +138,7 @@ class StorageController {
 
     // push some data. this will trigger any callbacks attached
     // to the key, passing a clone of the new data as the first param
-    populate(channel, key, data, ignoreFresh = false) {
+    populate(channel, key, expiration, data, ignoreFresh = false) {
         const _channel = normalizeChannel(channel, 'populate'),
             events = store.memory.get('events') || {},
             fresh = store[_channel].get('fresh') || {},
@@ -102,7 +146,24 @@ class StorageController {
         let ni;
 
         if (!ignoreFresh) {
-            fresh[key] = Date.now();
+            if (
+                !expiration &&
+                fresh[key] &&
+                Object.prototype.toString
+                    .call(fresh[key]) === '[object Object]'
+            ) {
+                fresh[key] = {
+                    hit: Date.now(),
+                    expires: (
+                        Date.now() + (fresh[key].expires - fresh[key].hit)
+                    )
+                };
+            } else {
+                fresh[key] = {
+                    hit: Date.now(),
+                    expires: Date.now() + expiration
+                };
+            }
         }
 
         _data[key] = deepClone(data);
@@ -119,6 +180,18 @@ class StorageController {
         }
     }
 
+    remove(channel, key) {
+        const _channel = normalizeChannel(channel, 'remove'),
+            fresh = store[_channel].get('fresh') || {},
+            _data = store[_channel].get('data') || {};
+
+        delete fresh[key];
+        delete _data[key];
+
+        store[_channel].set('data', _data);
+        store[_channel].set('fresh', fresh);
+    }
+
     // grab some datas
     get(channel, key) {
         const _channel = normalizeChannel(channel, 'get'),
@@ -132,7 +205,18 @@ class StorageController {
         const _channel = normalizeChannel(channel, 'freshness'),
             data = store[_channel].get('fresh') || {};
 
-        return data[key] || 0;
+        if (!data.hasOwnProperty(key)) {
+            return 0;
+        }
+
+        // cleaning up old formatted data
+        /* istanbul ignore if: I havent figured out this test yet */
+        if (Object.prototype.toString.call(data[key]) !== '[object Object]') {
+            this.remove(channel, key);
+            return 0;
+        }
+
+        return data[key].hit;
     }
 
     // takes a snapshot of the current state

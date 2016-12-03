@@ -36,7 +36,7 @@ describe('Storage Controller', function() {
 		}).to.not.throw('Invalid string passed through window.StorageController');
 	});
 
-	it ('should prepopulate', function() {
+	it ('should prepopulate', function(done) {
 		window.StorageController = JSON.stringify({
 			memory: {
 				key1: 1,
@@ -63,7 +63,14 @@ describe('Storage Controller', function() {
 
 		const storage = new StorageControllerStub();
 
-		expect(spy.callCount).to.equal(6);
+		setTimeout(() => {
+			try {
+				expect(spy.callCount).to.equal(6);
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}, 50);
 	});
 
 	it ('should not update the freshness on prepopulate', function() {
@@ -108,9 +115,9 @@ describe('Storage Controller', function() {
 		const storage = new StorageController(),
 			now = Date.now();
 
-		storage.populate('memory', 'key1', 5);
-		storage.populate('local', 'key1', 5);
-		storage.populate('session', 'key1', 5);
+		storage.populate('memory', 'key1', 20, 5);
+		storage.populate('local', 'key1', 20, 5);
+		storage.populate('session', 'key1', 20, 5);
 
 		expect(storage.freshness('memory', 'key1') - now).to.be.below(10)
 			.and.to.be.above(-10);
@@ -120,7 +127,94 @@ describe('Storage Controller', function() {
 			.and.to.be.above(-10);
 	});
 
-	it ('should serialize', function() {
+	it ('should inherit freshness', function(done) {
+		const storage = new StorageController(),
+			now = Date.now();
+
+		storage.populate('memory', 'key1', 20, 5);
+		storage.populate('memory', 'key1', false, 5);
+
+		setTimeout(() => {
+			try {
+				expect(storage.freshness('memory', 'key1') - now).to.be.below(5)
+					.and.to.be.above(-5);
+
+				setTimeout(() => {
+					try {
+						expect(storage.freshness('memory', 'key1') - now).to.equal(0);
+						done();
+					} catch(e) {
+						done(e);
+					}
+				}, 15);
+			} catch(e) {
+				done(e);
+			}
+		}, 15);
+	});
+
+	it ('should remove stuff when asked to', function() {
+		const storage = new StorageController();
+
+		storage.populate('memory', 'key1', 20, 5);
+		storage.populate('local', 'key1', 20, 5);
+		storage.populate('session', 'key1', 20, 5);
+
+		storage.remove('memory', 'key1');
+		storage.remove('memory', 'key2');
+		storage.remove('local', 'key1');
+		storage.remove('session', 'key1');
+
+		expect(storage.freshness('memory', 'key1')).to.equal(0);
+		expect(storage.freshness('memory', 'key2')).to.equal(0);
+		expect(storage.freshness('local', 'key1')).to.equal(0);
+		expect(storage.freshness('session', 'key1')).to.equal(0);
+
+		expect(Object.keys(storage.get('memory', 'key1')).length).to.equal(0);
+		expect(Object.keys(storage.get('memory', 'key2')).length).to.equal(0);
+		expect(Object.keys(storage.get('local', 'key1')).length).to.equal(0);
+		expect(Object.keys(storage.get('session', 'key1')).length).to.equal(0);
+	});
+
+	it ('should prune old stuff', function(done) {
+		const spy = sinon.spy();
+
+		class StorageControllerStub extends StorageController {
+			remove(...args) {
+				spy.apply(spy, args);
+				super.remove.apply(this, args);
+			}
+		}
+
+		const storage = new StorageControllerStub();
+
+		storage.populate('memory', 'key1', -15, 5);
+		storage.populate('local', 'key1', -15, 5);
+		storage.populate('session', 'key1', -15, 5);
+
+		storage.populate('memory', 'key2', 20, 5);
+		storage.populate('local', 'key2', 20, 5);
+		storage.populate('session', 'key2', 20, 5);
+
+		storage._pruneCache(() => {
+			try {
+				expect(Object.keys(storage.get('memory', 'key1')).length).to.equal(0);
+				expect(Object.keys(storage.get('local', 'key1')).length).to.equal(0);
+				expect(Object.keys(storage.get('session', 'key1')).length).to.equal(0);
+
+				expect(storage.get('memory', 'key2')).to.equal(5);
+				expect(storage.get('local', 'key2')).to.equal(5);
+				expect(storage.get('session', 'key2')).to.equal(5);
+
+				expect(spy.callCount).to.equal(3);
+				done();
+			} catch(e) {
+				done(e);
+			}
+		})
+	});
+
+	it ('should serialize', function(done) {
 		window.StorageController = JSON.stringify({
 			memory: {
 				key1: 1,
@@ -136,10 +230,18 @@ describe('Storage Controller', function() {
 			}
 		});
 
-		const storage = new StorageController(),
-			out = storage._out();
+		const storage = new StorageController()
 
-		expect(out).to.equal(window.StorageController);
+		setTimeout(() => {
+			try {
+				const out = storage._out();
+
+				expect(out).to.equal(window.StorageController);
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}, 50);
 	});
 
 	it ('should serialize when empty', function() {
@@ -164,7 +266,7 @@ describe('Storage Controller', function() {
 		const storage = new StorageController();
 
 		expect(function() {
-			storage.populate('beans', 'yolo', 'hashtag');
+			storage.populate('beans', 'yolo', 150, 'hashtag');
 		}).to.throw('Invalid storage mechanism sent to StorageController.populate');
 		expect(function() {
 			storage.register('beans', 'yolo', function() {});
@@ -182,7 +284,7 @@ describe('Storage Controller', function() {
 
 		storage.register('memory', 'key1');
 
-		storage.populate('memory', 'key1', 12);
+		storage.populate('memory', 'key1', 150, 12);
 	});
 
 	it('should register multiple callbacks', function() {
@@ -193,7 +295,7 @@ describe('Storage Controller', function() {
 		storage.register('memory', 'key1', spy1);
 		storage.register('memory', 'key1', spy2);
 
-		storage.populate('memory', 'key1', 12);
+		storage.populate('memory', 'key1', 150, 12);
 
 		expect(spy1.callCount).to.equal(1);
 		expect(spy2.callCount).to.equal(1);
@@ -205,13 +307,13 @@ describe('Storage Controller', function() {
 		const storage = new StorageController(),
 			spy = sinon.spy();
 
-		storage.populate('memory', 'key1', 12);
+		storage.populate('memory', 'key1', 150, 12);
 		storage.register('memory', 'key1', spy);
 
 		expect(spy.callCount).to.equal(1);
 		expect(spy.args[0][0]).to.equal(12);
 
-		storage.populate('memory', 'key1', 'beans');
+		storage.populate('memory', 'key1', 150, 'beans');
 
 		expect(spy.callCount).to.equal(2);
 		expect(spy.args[1][0]).to.equal('beans');

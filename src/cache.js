@@ -44,16 +44,22 @@ class Cache {
                         this.key
                     );
 
-                if (
-                    (
-                        !fresh &&
-                        Object.keys(stored).length
-                    ) || (
-                        fresh &&
-                        Date.now() - fresh < this.expiration
-                    )
-                ) {
+                /* istanbul ignore if: cannot test this right now */
+                if (!fresh && Object.keys(stored).length) {
                     return stored;
+                }
+
+                if (fresh && Date.now() - fresh < this.expiration) {
+                    return stored;
+                }
+
+                /* istanbul ignore if: cannot test this right now */
+                if (fresh) {
+                    //delete cache entry
+                    StorageController.remove(
+                        this.channel,
+                        this.key
+                    );
                 }
 
                 return false;
@@ -65,7 +71,12 @@ class Cache {
     }
 
     populate(data) {
-        StorageController.populate(this.channel, this.key, data);
+        StorageController.populate(
+            this.channel,
+            this.key,
+            this.expiration,
+            data
+        );
 
         return this;
     }

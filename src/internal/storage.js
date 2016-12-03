@@ -55,8 +55,8 @@ function generateMemoryStore() {
                     throw new Error([
                         '',
                         'Server misconfigured:',
-                        '\tPlease make sure to create the namespace before using the',
-                        '\tcache system on the server.',
+                        '\tPlease make sure to create the namespace before',
+                        '\tusing the cache system on the server.',
                         '\thttps://github.com/drdelambre/syme#cache-serverside',
                         ''
                     ].join('\n'));
@@ -71,8 +71,8 @@ function generateMemoryStore() {
                     throw new Error([
                         '',
                         'Server misconfigured:',
-                        '\tPlease make sure to create the namespace before using the',
-                        '\tcache system on the server.',
+                        '\tPlease make sure to create the namespace before',
+                        '\tusing the cache system on the server.',
                         '\thttps://github.com/drdelambre/syme#cache-serverside',
                         ''
                     ].join('\n'));
