@@ -1,8 +1,8 @@
 const THROTTLE = 10;
 
 function clone(obj) {
-    var out = {},
-        ni;
+    const out = {};
+    let ni;
 
     for (ni in obj) {
         out[ni] = obj[ni];
@@ -12,13 +12,18 @@ function clone(obj) {
 }
 
 function ThrottledObserver() {
-    var _cache = {},
+    const _cache = {},
         _callbacks = {},
-        throttle = {},
-        _timer;
+        throttle = {};
+    let _timer;
 
     throttle.add = function(scope, evt) {
-        if (_cache.hasOwnProperty(scope)) {
+        // const _evt = { new: evt};
+
+        if (
+            _cache.hasOwnProperty(scope) &&
+            _cache[scope].hasOwnProperty('old')
+        ) {
             evt.old = _cache[scope].old;
         }
 
@@ -44,7 +49,7 @@ function ThrottledObserver() {
     };
 
     throttle.fire = function() {
-        var ni, no;
+        let ni, no;
 
         if (!Object.keys(_cache).length) {
             _timer = null;

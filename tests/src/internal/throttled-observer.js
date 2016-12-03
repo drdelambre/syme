@@ -40,6 +40,7 @@ describe('Change throttle', function() {
 
 				done();
 			} catch (e) {
+				console.log('hooo man', e);
 				done(e);
 			}
 		}, 50);
