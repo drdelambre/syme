@@ -233,6 +233,7 @@ class StorageController {
     out() {
         const outStr = this._out()
             .replace(/\n/g, '\\n')
+            .replace(/\r/g, '')
             .replace(/\\n/g, '\\\\n')
             .replace(/'/g, '\\\'');
 
