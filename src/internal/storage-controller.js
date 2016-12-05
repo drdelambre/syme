@@ -232,8 +232,8 @@ class StorageController {
     // a script tag on the server side
     out() {
         const outStr = this._out()
+            .replace(/\r\n/g, '\n')
             .replace(/\n/g, '\\n')
-            .replace(/\r/g, '')
             .replace(/\\n/g, '\\\\n')
             .replace(/'/g, '\\\'');
 
