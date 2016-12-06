@@ -19,5 +19,5 @@
 /* istanbul ignore if: I havent figured out this test yet */if(Object.prototype.toString.call(data[key])!=='[object Object]'){this.remove(channel,key);return 0;}return data[key].hit;}// takes a snapshot of the current state
 },{key:'_out',value:function _out(){return JSON.stringify({memory:_storage2.default.memory.get('data')||{},local:_storage2.default.local.get('data')||{},session:_storage2.default.session.get('data')||{}});}// use this function for generating the string you pump into
 // a script tag on the server side
-},{key:'out',value:function out(){var outStr=this._out().replace(/\r\n/g,'\n').replace(/\n/g,'\\n').replace(/\\n/g,'\\\\n').replace(/'/g,'\\\'');return'window.StorageController = \''+outStr+'\';';}}]);return StorageController;}();// we use a singleton once so we don't have to use it elsewhere
+},{key:'out',value:function out(){var outStr=this._out().replace(/\r\n/g,'\n').replace(/\n/g,'\\n').replace(/\\n/g,'\\\\n').replace(/'/g,'\\\'').replace(/\\\"/g,'\\\\"').replace(/\"/g,'\\"');return'window.StorageController = "'+outStr+'";';}}]);return StorageController;}();// we use a singleton once so we don't have to use it elsewhere
 var outer=new StorageController();/* istanbul ignore else: no one cares */if(typeof window!=='undefined'){window.StorageController=outer;}exports.StorageController=StorageController;exports.default=outer;

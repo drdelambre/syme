@@ -235,9 +235,10 @@ class StorageController {
             .replace(/\r\n/g, '\n')
             .replace(/\n/g, '\\n')
             .replace(/\\n/g, '\\\\n')
-            .replace(/'/g, '\\\'');
-
-        return `window.StorageController = '${outStr}';`;
+            .replace(/'/g, '\\\'')
+            .replace(/\\\"/g, '\\\\"')
+            .replace(/\"/g, '\\"');
+        return `window.StorageController = "${outStr}";`;
     }
 }
 
