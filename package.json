@@ -1,6 +1,6 @@
 {
   "name": "syme",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "A model set for allowing you to share data contracts between your view and the rest of your application, take your props on the go",
   "author": "Alex Boatwright <drdelambre@gmail.com>",
   "repository": {

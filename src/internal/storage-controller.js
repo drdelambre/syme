@@ -41,7 +41,7 @@ class StorageController {
         }
 
         try {
-            const initial = JSON.parse(window.StorageController);
+            const initial = JSON.parse(window.atob(window.StorageController));
 
             if (
                 Object.prototype.toString.call(initial) !== '[object Object]'
@@ -231,14 +231,10 @@ class StorageController {
     // use this function for generating the string you pump into
     // a script tag on the server side
     out() {
-        const outStr = this._out()
-            .replace(/\r\n/g, '\n')
-            .replace(/\n/g, '\\n')
-            .replace(/\\n/g, '\\\\n')
-            .replace(/'/g, '\\\'')
-            .replace(/\\\"/g, '\\\\"')
-            .replace(/\"/g, '\\"');
-        return `window.StorageController = "${outStr}";`;
+        const outStr = new Buffer(this._out()),
+            str = outStr.toString('base64');
+
+        return `window.StorageController = "${str}";`;
     }
 }
 
