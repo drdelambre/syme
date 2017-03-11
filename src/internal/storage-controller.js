@@ -182,14 +182,24 @@ class StorageController {
 
     remove(channel, key) {
         const _channel = normalizeChannel(channel, 'remove'),
+            events = store.memory.get('events') || {},
             fresh = store[_channel].get('fresh') || {},
             _data = store[_channel].get('data') || {};
+        let ni;
 
         delete fresh[key];
         delete _data[key];
 
         store[_channel].set('data', _data);
         store[_channel].set('fresh', fresh);
+
+        if (!events.hasOwnProperty(key)) {
+            return;
+        }
+
+        for (ni = 0; ni < events[key].length; ni++) {
+            events[key][ni](false);
+        }
     }
 
     // grab some datas

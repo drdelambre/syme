@@ -253,7 +253,7 @@ describe('the cache system', function() {
 			expect(spy.args[0][0].hashtag).to.equal('yolo');
 		});
 
-		it('should clear', function() {
+		it('should clear and tell people', function() {
 			class MyCache extends Cache {
 				constructor() {
 					super({
@@ -264,16 +264,23 @@ describe('the cache system', function() {
 				}
 			}
 
-			const cache = new MyCache();
+			const spy = sinon.spy(),
+				cache = new MyCache();
 
 			cache.populate({
 				things: true,
 				yolo: 'beans'
 			});
 
+			cache.watch(spy);
+
+			expect(spy.callCount).to.equal(1);
+
 			cache.clear();
 
 			expect(cache.cached).to.be.false;
+			expect(spy.callCount).to.equal(2);
+			expect(spy.args[1][0]).to.be.false;
 		});
 	});
 });

@@ -141,12 +141,12 @@ describe('Storage Controller', function() {
 
 				setTimeout(() => {
 					try {
-						expect(storage.freshness('memory', 'key1') - now).to.equal(0);
+						expect(storage.freshness('memory', 'key1') - now).to.equal(0)
 						done();
 					} catch(e) {
 						done(e);
 					}
-				}, 15);
+				}, 25);
 			} catch(e) {
 				done(e);
 			}
