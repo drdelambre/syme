@@ -81,6 +81,15 @@ class Cache {
         return this;
     }
 
+    clear() {
+        StorageController.remove(
+            this.channel,
+            this.key
+        );
+
+        return this;
+    }
+
     watch(callback) {
         StorageController.register(this.channel, this.key, (data) => {
             callback(data);

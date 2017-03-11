@@ -231,7 +231,7 @@ class StorageController {
     // use this function for generating the string you pump into
     // a script tag on the server side
     out() {
-        const outStr = new Buffer(this._out()),
+        const outStr = new Buffer(this._out()), // eslint-disable-line
             str = outStr.toString('base64');
 
         return `window.StorageController = "${str}";`;

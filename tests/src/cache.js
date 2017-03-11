@@ -251,6 +251,29 @@ describe('the cache system', function() {
 			expect(spy.callCount).to.equal(1);
 
 			expect(spy.args[0][0].hashtag).to.equal('yolo');
-		})
+		});
+
+		it('should clear', function() {
+			class MyCache extends Cache {
+				constructor() {
+					super({
+						key: 'test-cache-' + (cacheNum++),
+						channel: 'local',
+						expiration: 1000
+					});
+				}
+			}
+
+			const cache = new MyCache();
+
+			cache.populate({
+				things: true,
+				yolo: 'beans'
+			});
+
+			cache.clear();
+
+			expect(cache.cached).to.be.false;
+		});
 	});
 });

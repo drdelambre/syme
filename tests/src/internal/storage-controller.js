@@ -17,13 +17,13 @@ describe('Storage Controller', function() {
 			new StorageController();
 		}).to.throw('Invalid string passed through window.StorageController');
 
-		window.StorageController = '[]';
+		window.StorageController = 'W10=';
 
 		expect(function() {
 			new StorageController();
 		}).to.throw('Invalid string passed through window.StorageController');
 
-		window.StorageController = '{}';
+		window.StorageController = 'e30=';
 
 		expect(function() {
 			new StorageController();
@@ -37,7 +37,7 @@ describe('Storage Controller', function() {
 	});
 
 	it ('should prepopulate', function(done) {
-		window.StorageController = JSON.stringify({
+		window.StorageController = btoa(JSON.stringify({
 			memory: {
 				key1: 1,
 				key2: 2
@@ -50,7 +50,7 @@ describe('Storage Controller', function() {
 				key1: 5,
 				key2: 6
 			}
-		});
+		}));
 
 		const spy = sinon.spy();
 
@@ -74,7 +74,7 @@ describe('Storage Controller', function() {
 	});
 
 	it ('should not update the freshness on prepopulate', function() {
-		window.StorageController = JSON.stringify({
+		window.StorageController = btoa(JSON.stringify({
 			memory: {
 				key1: 1,
 				key2: 2
@@ -87,7 +87,7 @@ describe('Storage Controller', function() {
 				key1: 5,
 				key2: 6
 			}
-		});
+		}));
 
 		const storage = new StorageController();
 
@@ -97,7 +97,7 @@ describe('Storage Controller', function() {
 	});
 
 	it ('should update the freshness on populate', function() {
-		window.StorageController = JSON.stringify({
+		window.StorageController = btoa(JSON.stringify({
 			memory: {
 				key1: 1,
 				key2: 2
@@ -110,7 +110,7 @@ describe('Storage Controller', function() {
 				key1: 5,
 				key2: 6
 			}
-		});
+		}));
 
 		const storage = new StorageController(),
 			now = Date.now();
@@ -215,7 +215,7 @@ describe('Storage Controller', function() {
 	});
 
 	it ('should serialize', function(done) {
-		window.StorageController = JSON.stringify({
+		window.StorageController = btoa(JSON.stringify({
 			memory: {
 				key1: 1,
 				key2: 2
@@ -228,7 +228,7 @@ describe('Storage Controller', function() {
 				key1: 5,
 				key2: 6
 			}
-		});
+		}));
 
 		const storage = new StorageController()
 
@@ -236,7 +236,7 @@ describe('Storage Controller', function() {
 			try {
 				const out = storage._out();
 
-				expect(out).to.equal(window.StorageController);
+				expect(out).to.equal(atob(window.StorageController));
 				done();
 			} catch (e) {
 				done(e);
@@ -259,7 +259,7 @@ describe('Storage Controller', function() {
 		const storage = new StorageController(),
 			out = storage.out();
 
-		expect(out).to.equal('window.StorageController = \'{"memory":{},"local":{},"session":{}}\';');
+		expect(out).to.equal('window.StorageController = \"eyJtZW1vcnkiOnt9LCJsb2NhbCI6e30sInNlc3Npb24iOnt9fQ==\";');
 	});
 
 	it ('should yell when perverted', function() {
