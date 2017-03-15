@@ -116,9 +116,9 @@ class StorageController {
 
     // use this function to register callbacks to the data being changed
     register(channel, key, cb) {
-        const _channel = normalizeChannel(channel, 'register'),
-            events = store.memory.get('events') || {},
-            data = store[_channel].get('data') || {};
+        const events = store.memory.get('events') || {};
+
+        normalizeChannel(channel, 'register');
 
         if (typeof cb !== 'function') {
             return;
@@ -130,10 +130,6 @@ class StorageController {
 
         events[key].push(cb);
         store.memory.set('events', events);
-
-        if (data.hasOwnProperty(key)) {
-            cb(deepClone(data[key]));
-        }
     }
 
     // push some data. this will trigger any callbacks attached

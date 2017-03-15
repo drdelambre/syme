@@ -302,20 +302,4 @@ describe('Storage Controller', function() {
 		expect(spy1.args[0][0]).to.equal(12);
 		expect(spy2.args[0][0]).to.equal(12);
 	});
-
-	it('should populate on register', function() {
-		const storage = new StorageController(),
-			spy = sinon.spy();
-
-		storage.populate('memory', 'key1', 150, 12);
-		storage.register('memory', 'key1', spy);
-
-		expect(spy.callCount).to.equal(1);
-		expect(spy.args[0][0]).to.equal(12);
-
-		storage.populate('memory', 'key1', 150, 'beans');
-
-		expect(spy.callCount).to.equal(2);
-		expect(spy.args[1][0]).to.equal('beans');
-	});
 });

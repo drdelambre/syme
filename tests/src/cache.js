@@ -274,13 +274,13 @@ describe('the cache system', function() {
 
 			cache.watch(spy);
 
-			expect(spy.callCount).to.equal(1);
+			expect(spy.callCount).to.equal(0);
 
 			cache.clear();
 
 			expect(cache.cached).to.be.false;
-			expect(spy.callCount).to.equal(2);
-			expect(spy.args[1][0]).to.be.false;
+			expect(spy.callCount).to.equal(1);
+			expect(spy.args[0][0]).to.be.false;
 		});
 	});
 });
