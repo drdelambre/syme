@@ -87,7 +87,7 @@ class StorageController {
                     .call(freshMem[ni]) !== '[object Object]' ||
                 freshMem[ni].expires < now
             ) {
-                this.remove('memory', ni);
+                this.remove('memory', ni, false);
             }
         }
 
@@ -97,7 +97,7 @@ class StorageController {
                     .call(freshLocal[ni]) !== '[object Object]' ||
                 freshLocal[ni].expires < now
             ) {
-                this.remove('local', ni);
+                this.remove('local', ni, false);
             }
         }
 
@@ -107,7 +107,7 @@ class StorageController {
                     .call(freshSesh[ni]) !== '[object Object]' ||
                 freshSesh[ni].expires < now
             ) {
-                this.remove('session', ni);
+                this.remove('session', ni, false);
             }
         }
 
@@ -176,7 +176,7 @@ class StorageController {
         }
     }
 
-    remove(channel, key) {
+    remove(channel, key, fireEvents = true) {
         const _channel = normalizeChannel(channel, 'remove'),
             events = store.memory.get('events') || {},
             fresh = store[_channel].get('fresh') || {},
@@ -189,7 +189,7 @@ class StorageController {
         store[_channel].set('data', _data);
         store[_channel].set('fresh', fresh);
 
-        if (!events.hasOwnProperty(key)) {
+        if (!fireEvents || !events.hasOwnProperty(key)) {
             return;
         }
 
@@ -218,7 +218,7 @@ class StorageController {
         // cleaning up old formatted data
         /* istanbul ignore if: I havent figured out this test yet */
         if (Object.prototype.toString.call(data[key]) !== '[object Object]') {
-            this.remove(channel, key);
+            this.remove(channel, key, false);
             return 0;
         }
 

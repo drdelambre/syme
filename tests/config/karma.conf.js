@@ -82,7 +82,7 @@ module.exports = function(config) {
             check: {
                 each: {
                     statements: 96,
-                    branches: 96,
+                    branches: 95,
                     functions: 96,
                     lines: 96
                 }
