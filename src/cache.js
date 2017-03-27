@@ -58,7 +58,8 @@ class Cache {
                     //delete cache entry
                     StorageController.remove(
                         this.channel,
-                        this.key
+                        this.key,
+                        false
                     );
                 }
 
