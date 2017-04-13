@@ -18,6 +18,17 @@ function ThrottledObserver() {
     let _timer;
 
     throttle.add = function(scope, evt) {
+        if (!Object.keys(_callbacks).length) {
+            return;
+        }
+
+        if (
+            !_callbacks.hasOwnProperty(scope) &&
+            !_callbacks.hasOwnProperty('*')
+        ) {
+            return;
+        }
+
         // const _evt = { new: evt};
 
         if (
