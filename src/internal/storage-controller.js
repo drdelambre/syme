@@ -1,11 +1,5 @@
 import store from 'internal/storage';
 
-function deepClone(obj) {
-    const _obj = JSON.parse(JSON.stringify(obj));
-
-    return _obj;
-}
-
 function normalizeChannel(channel, func) {
     if (!/^(memory|local|session)$/.test(channel)) {
         throw new Error(
@@ -138,7 +132,7 @@ class StorageController {
         const _channel = normalizeChannel(channel, 'populate'),
             events = store.memory.get('events') || {},
             fresh = store[_channel].get('fresh') || {},
-            _data = store[_channel].get('data') || {};
+            _data = JSON.stringify(data);
         let ni;
 
         if (!ignoreFresh) {
@@ -160,11 +154,11 @@ class StorageController {
                     expires: Date.now() + expiration
                 };
             }
+        } else if (!fresh.hasOwnProperty(key)) {
+            fresh[key] = {};
         }
 
-        _data[key] = deepClone(data);
-
-        store[_channel].set('data', _data);
+        store[_channel].set(key, _data);
         store[_channel].set('fresh', fresh);
 
         if (!events.hasOwnProperty(key)) {
@@ -172,21 +166,19 @@ class StorageController {
         }
 
         for (ni = 0; ni < events[key].length; ni++) {
-            events[key][ni](deepClone(data));
+            events[key][ni](JSON.parse(_data));
         }
     }
 
     remove(channel, key, fireEvents = true) {
         const _channel = normalizeChannel(channel, 'remove'),
             events = store.memory.get('events') || {},
-            fresh = store[_channel].get('fresh') || {},
-            _data = store[_channel].get('data') || {};
+            fresh = store[_channel].get('fresh') || {};
         let ni;
 
         delete fresh[key];
-        delete _data[key];
 
-        store[_channel].set('data', _data);
+        store[_channel].set(key, '{}');
         store[_channel].set('fresh', fresh);
 
         if (!fireEvents || !events.hasOwnProperty(key)) {
@@ -201,9 +193,9 @@ class StorageController {
     // grab some datas
     get(channel, key) {
         const _channel = normalizeChannel(channel, 'get'),
-            data = store[_channel].get('data') || {};
+            data = store[_channel].get(key) || '{}';
 
-        return deepClone(data[key] || {});
+        return JSON.parse(data);
     }
 
     // check on the last time the data was updated
@@ -227,11 +219,23 @@ class StorageController {
 
     // takes a snapshot of the current state
     _out() {
-        return JSON.stringify({
-            memory: store.memory.get('data') || {},
-            local: store.local.get('data') || {},
-            session: store.session.get('data') || {}
+        const out = {
+            memory: {},
+            local: {},
+            session: {}
+        };
+
+        Object.keys(store.memory.get('fresh') || {}).forEach((key) => {
+            out.memory[key] = JSON.parse(store.memory.get(key));
         });
+        Object.keys(store.local.get('fresh') || {}).map((key) => {
+            out.local[key] = JSON.parse(store.local.get(key));
+        });
+        Object.keys(store.session.get('fresh') || {}).map((key) => {
+            out.session[key] = JSON.parse(store.session.get(key));
+        });
+
+        return JSON.stringify(out);
     }
 
     // use this function for generating the string you pump into
