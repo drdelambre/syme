@@ -1,4 +1,3 @@
-import type from 'internal/type.js';
 import ThrottledObserver from 'internal/throttled-observer.js';
 import MagicArray from 'internal/magic-array.js';
 import MagicMethod from 'internal/magic-method.js';
@@ -8,6 +7,8 @@ var blacklist = new RegExp(
     'keys|toString|toLocaleString|valueOf|hasOwnProperty|' +
     'isPrototypeOf|propertyIsEnumerable|should|before|clear)$'
 );
+
+const TOSTR = Object.prototype.toString;
 
 /**\
 
@@ -89,19 +90,22 @@ class Model {
 
     \**/
     clear() {
-        let ni;
+        let ni, no;
 
         for (ni in this._def) {
+            no = this._def[ni].default;
             if (this._def[ni].value instanceof Model) {
                 this[ni].clear();
-            } else if (type(this._def[ni].default, 'array')) {
+            } else if (
+                TOSTR.call(no) === '[object Array]'
+            ) {
                 this[ni] = new MagicArray(
                         this._def,
                         ni,
                         this._changeThrottle
                     );
             } else {
-                this[ni] = this._def[ni].default;
+                this[ni] = no;
             }
         }
 
@@ -119,33 +123,36 @@ class Model {
     \**/
     out() {
         var out = {},
-            ni, no, a;
+            ni, no, a,
+            val;
 
         for (ni in this._def) {
-            if (type(this._def[ni].default, 'array')) {
+            val = this._def[ni].value;
+
+            if (TOSTR.call(this._def[ni].default) === '[object Array]') {
                 a = [];
 
                 if (this._def[ni].type) {
-                    for (no = 0; no < this._def[ni].value.length; no++) {
+                    for (no = 0; no < val.length; no++) {
                         /* istanbul ignore else */
-                        if (this._def[ni].value[no] instanceof Model) {
-                            a.push(this._def[ni].value[no].out());
+                        if (val[no] instanceof Model) {
+                            a.push(val[no].out());
                         }
                     }
                 } else {
-                    a = this._def[ni].value.slice(0);
+                    a = val.slice(0);
                 }
 
                 out[ni] = a;
                 continue;
             }
 
-            if (this._def[ni].value instanceof Model) {
-                out[ni] = this._def[ni].value.out();
+            if (val instanceof Model) {
+                out[ni] = val.out();
                 continue;
             }
 
-            out[ni] = this._def[ni].value;
+            out[ni] = val;
         }
 
         return out;
@@ -179,7 +186,7 @@ class Model {
             }
 
             if (def[ni] instanceof Model ||
-                    (type(def[ni], 'function') &&
+                    (typeof def[ni] === 'function' &&
                         def[ni].prototype instanceof Model)) {
                 this._def[ni] = {
                     'default': null,
@@ -187,7 +194,7 @@ class Model {
                     type: def[ni],
                     before: []
                 };
-            } else if (type(def[ni], 'array')) {
+            } else if (TOSTR.call(def[ni]) === '[object Array]') {
                 this._def[ni] = {
                     'default': [],
                     type: def[ni].length ? def[ni][0] : null,
@@ -195,10 +202,10 @@ class Model {
                 };
 
                 this._def[ni].value = new MagicArray(
-                        this._def,
-                        ni,
-                        this._changeThrottle
-                    );
+                    this._def,
+                    ni,
+                    this._changeThrottle
+                );
             } else {
                 this._def[ni] = {
                     'default': def[ni],
@@ -232,7 +239,7 @@ class Model {
         var ni;
 
         function isFunc(val) {
-            return type(val, 'function');
+            return typeof val === 'function';
         }
 
         for (ni in def) {
@@ -242,7 +249,7 @@ class Model {
                     ni + ') that does not exist');
             }
 
-            if (!type(def[ni], 'array')) {
+            if (TOSTR.call(def[ni]) !== '[object Array]') {
                 def[ni] = [ def[ni] ];
             }
 

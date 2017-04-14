@@ -1,4 +1,4 @@
-'use strict';Object.defineProperty(exports,"__esModule",{value:true});var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}return function(Constructor,protoProps,staticProps){if(protoProps)defineProperties(Constructor.prototype,protoProps);if(staticProps)defineProperties(Constructor,staticProps);return Constructor;};}();var _type=require('./internal/type.js');var _type2=_interopRequireDefault(_type);var _throttledObserver=require('./internal/throttled-observer.js');var _throttledObserver2=_interopRequireDefault(_throttledObserver);var _magicArray=require('./internal/magic-array.js');var _magicArray2=_interopRequireDefault(_magicArray);var _magicMethod=require('./internal/magic-method.js');var _magicMethod2=_interopRequireDefault(_magicMethod);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}var blacklist=new RegExp('^(_.*|constructor|onUpdate|fill|out|errors|validate|extend|'+'keys|toString|toLocaleString|valueOf|hasOwnProperty|'+'isPrototypeOf|propertyIsEnumerable|should|before|clear)$');/**\
+'use strict';Object.defineProperty(exports,"__esModule",{value:true});var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}return function(Constructor,protoProps,staticProps){if(protoProps)defineProperties(Constructor.prototype,protoProps);if(staticProps)defineProperties(Constructor,staticProps);return Constructor;};}();var _throttledObserver=require('./internal/throttled-observer.js');var _throttledObserver2=_interopRequireDefault(_throttledObserver);var _magicArray=require('./internal/magic-array.js');var _magicArray2=_interopRequireDefault(_magicArray);var _magicMethod=require('./internal/magic-method.js');var _magicMethod2=_interopRequireDefault(_magicMethod);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}var blacklist=new RegExp('^(_.*|constructor|onUpdate|fill|out|errors|validate|extend|'+'keys|toString|toLocaleString|valueOf|hasOwnProperty|'+'isPrototypeOf|propertyIsEnumerable|should|before|clear)$');var TOSTR=Object.prototype.toString;/**\
 
     Model
 
@@ -42,7 +42,7 @@
 
         resets a model to it's default values
 
-    \**/},{key:'clear',value:function clear(){var ni=void 0;for(ni in this._def){if(this._def[ni].value instanceof Model){this[ni].clear();}else if((0,_type2.default)(this._def[ni].default,'array')){this[ni]=new _magicArray2.default(this._def,ni,this._changeThrottle);}else{this[ni]=this._def[ni].default;}}return this;}/**\
+    \**/},{key:'clear',value:function clear(){var ni=void 0,no=void 0;for(ni in this._def){no=this._def[ni].default;if(this._def[ni].value instanceof Model){this[ni].clear();}else if(TOSTR.call(no)==='[object Array]'){this[ni]=new _magicArray2.default(this._def,ni,this._changeThrottle);}else{this[ni]=no;}}return this;}/**\
 
         Model.out
 
@@ -50,7 +50,7 @@
         from rich and dynamic models, to plain old javascript objects to
         allow for easier (and cleaner) transference between modules
 
-    \**/},{key:'out',value:function out(){var out={},ni,no,a;for(ni in this._def){if((0,_type2.default)(this._def[ni].default,'array')){a=[];if(this._def[ni].type){for(no=0;no<this._def[ni].value.length;no++){/* istanbul ignore else */if(this._def[ni].value[no]instanceof Model){a.push(this._def[ni].value[no].out());}}}else{a=this._def[ni].value.slice(0);}out[ni]=a;continue;}if(this._def[ni].value instanceof Model){out[ni]=this._def[ni].value.out();continue;}out[ni]=this._def[ni].value;}return out;}/**\
+    \**/},{key:'out',value:function out(){var out={},ni,no,a,val;for(ni in this._def){val=this._def[ni].value;if(TOSTR.call(this._def[ni].default)==='[object Array]'){a=[];if(this._def[ni].type){for(no=0;no<val.length;no++){/* istanbul ignore else */if(val[no]instanceof Model){a.push(val[no].out());}}}else{a=val.slice(0);}out[ni]=a;continue;}if(val instanceof Model){out[ni]=val.out();continue;}out[ni]=val;}return out;}/**\
 
         Model.extend
 
@@ -68,7 +68,7 @@
             connecting the basic array definition with the object
             hierarchy machanism. Makin cool stuff happen.
 
-    \**/},{key:'extend',value:function extend(def){var ni;for(ni in def){if(blacklist.test(ni)){continue;}if(def[ni]instanceof Model||(0,_type2.default)(def[ni],'function')&&def[ni].prototype instanceof Model){this._def[ni]={'default':null,value:new def[ni](),type:def[ni],before:[]};}else if((0,_type2.default)(def[ni],'array')){this._def[ni]={'default':[],type:def[ni].length?def[ni][0]:null,before:[]};this._def[ni].value=new _magicArray2.default(this._def,ni,this._changeThrottle);}else{this._def[ni]={'default':def[ni],value:def[ni],type:null,before:[]};}(0,_magicMethod2.default)(this,this._def,ni,this._changeThrottle);// eslint-disable-line
+    \**/},{key:'extend',value:function extend(def){var ni;for(ni in def){if(blacklist.test(ni)){continue;}if(def[ni]instanceof Model||typeof def[ni]==='function'&&def[ni].prototype instanceof Model){this._def[ni]={'default':null,value:new def[ni](),type:def[ni],before:[]};}else if(TOSTR.call(def[ni])==='[object Array]'){this._def[ni]={'default':[],type:def[ni].length?def[ni][0]:null,before:[]};this._def[ni].value=new _magicArray2.default(this._def,ni,this._changeThrottle);}else{this._def[ni]={'default':def[ni],value:def[ni],type:null,before:[]};}(0,_magicMethod2.default)(this,this._def,ni,this._changeThrottle);// eslint-disable-line
 }return this;}/**\
 
         Model.before
@@ -82,7 +82,7 @@
         transformation chain is stopped the first time a function returns
         an error state
 
-    \**/},{key:'before',value:function before(def){var ni;function isFunc(val){return(0,_type2.default)(val,'function');}for(ni in def){if(!this._def.hasOwnProperty(ni)){throw new Error('Model: called before on a property ('+ni+') that does not exist');}if(!(0,_type2.default)(def[ni],'array')){def[ni]=[def[ni]];}def[ni].filter(isFunc);this._def[ni].before=this._def[ni].before.concat(def[ni]);}return this;}/**\
+    \**/},{key:'before',value:function before(def){var ni;function isFunc(val){return typeof val==='function';}for(ni in def){if(!this._def.hasOwnProperty(ni)){throw new Error('Model: called before on a property ('+ni+') that does not exist');}if(TOSTR.call(def[ni])!=='[object Array]'){def[ni]=[def[ni]];}def[ni].filter(isFunc);this._def[ni].before=this._def[ni].before.concat(def[ni]);}return this;}/**\
 
         Model.keys
 
