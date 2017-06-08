@@ -302,4 +302,23 @@ describe('Storage Controller', function() {
 		expect(spy1.args[0][0]).to.equal(12);
 		expect(spy2.args[0][0]).to.equal(12);
 	});
+
+	it('should be able to unregister a callback', function() {
+		const storage = new StorageController(),
+			spy1 = sinon.spy(),
+			spy2 = sinon.spy();
+
+		const unregister1 = storage.register('memory', 'key1', spy1);
+		const unregister2 = storage.register('memory', 'key1', spy2);
+		storage.populate('memory', 'key1', null, 'data');
+
+		expect(spy1.callCount).to.equal(1);
+		expect(spy2.callCount).to.equal(1);
+
+		unregister1();
+		storage.populate('memory', 'key1', null, 'data');
+
+		expect(spy1.callCount).to.equal(1);
+		expect(spy2.callCount).to.equal(2);
+	});
 });

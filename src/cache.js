@@ -92,11 +92,7 @@ class Cache {
     }
 
     watch(callback) {
-        StorageController.register(this.channel, this.key, (data) => {
-            callback(data);
-        });
-
-        return this;
+        return StorageController.register(this.channel, this.key, callback);
     }
 }
 
