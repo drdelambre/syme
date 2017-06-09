@@ -143,7 +143,38 @@ describe('the cache system', function() {
 			expect(spy.callCount).to.equal(1);
 
 			expect(spy.args[0][0].hashtag).to.equal('yolo');
-		})
+		});
+
+		it('should not notify watchers that have been unregistered', function() {
+			class MyCache extends Cache {
+				constructor() {
+					super({
+						key: 'test-cache-' + (cacheNum++),
+						channel: 'memory',
+						expiration: 1000
+					});
+				}
+			}
+
+			const spy1 = sinon.spy(),
+				spy2 = sinon.spy(),
+				cache = new MyCache(),
+				unwatch1 = cache.watch(spy1),
+				unwatch2 = cache.watch(spy2),
+				populateCache = () => {
+					cache.populate({
+						data: 'test'
+					});
+				};
+
+			populateCache();
+			expect(spy1.callCount).to.equal(1);
+			expect(spy2.callCount).to.equal(1);
+			unwatch2();
+			populateCache();
+			expect(spy1.callCount).to.equal(2);
+			expect(spy2.callCount).to.equal(1);
+		});
 	});
 
 	describe('sessionStorage cache', function() {
