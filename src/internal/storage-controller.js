@@ -173,7 +173,7 @@ class StorageController {
     remove(channel, key, fireEvents = true) {
         const _channel = normalizeChannel(channel, 'remove'),
             events = store.memory.get('events') || {},
-            fresh = store[_channel].get('fresh') || {};
+            fresh = store[_channel].get('fresh') || /* istanbul ignore next */ {}; // eslint-disable-line max-len
         let ni;
 
         delete fresh[key];

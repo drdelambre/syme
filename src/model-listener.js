@@ -65,8 +65,8 @@ class ModelListener extends React.Component {
         this.node = ReactDOM.findDOMNode(this);
     }
 
+    /* istanbul ignore next: cant unmount */
     componentWillUnmount() {
-        /* istanbul ignore next: cant unmount */
         this.node = null;
     }
 

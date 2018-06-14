@@ -10,8 +10,8 @@
     "module": true,
     "__dirname": true,
 
-    "expect": true,
-    "sinon": true
+    "jest": true,
+    "expect": true
   },
   "plugins": [
     "react"

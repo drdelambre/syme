@@ -8,10 +8,10 @@
                 }
             }
         ],
-        "babel-plugin-transform-class-properties",
-        "babel-plugin-syntax-dynamic-import",
+        "transform-class-properties",
+        "syntax-dynamic-import",
         [
-            "babel-plugin-transform-runtime",
+            "transform-runtime",
             {
                 "helpers": true,
                 "polyfill": false,
@@ -19,17 +19,16 @@
             }
         ],
         [
-            "babel-plugin-transform-object-rest-spread",
+            "transform-object-rest-spread",
             {
                 "useBuiltIns": true
             }
         ]
     ],
     "presets": [
-        "babel-preset-react",
+        "react",
         [
-            "babel-preset-env", {
-                "modules": false,
+            "env", {
                 "targets": {
                     "ie9": true
                 },

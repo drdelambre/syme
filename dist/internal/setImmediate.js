@@ -1,4 +1,10 @@
-'use strict';Object.defineProperty(exports,"__esModule",{value:true});/**\
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+/**\
 
 A setImmediate polyfill by these guys: https://github.com/YuzuJS/setImmediate
 
@@ -23,5 +29,177 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-\**//* istanbul ignore next this is a polyfill */exports.default=function(global,undef){var tasksByHandle={},doc=global.document;var nextHandle=1,currentlyRunningATask=false,setImmediate=void 0,attachTo=void 0;if(global.setImmediate){return global.setImmediate;}function partiallyApplied(handler){var args=[].slice.call(arguments,1);return function(){if(typeof handler==='function'){handler.apply(undef,args);}else{new Function(''+handler)();// eslint-disable-line
-}};}function addFromSetImmediateArguments(args){tasksByHandle[nextHandle]=partiallyApplied.apply(undef,args);return nextHandle++;}function runIfPresent(handle){var task=void 0;if(currentlyRunningATask){setTimeout(partiallyApplied(runIfPresent,handle),0);}else{task=tasksByHandle[handle];if(task){currentlyRunningATask=true;try{task();}finally{clearImmediate(handle);currentlyRunningATask=false;}}}}function clearImmediate(handle){delete tasksByHandle[handle];}function installNextTickImplementation(){setImmediate=function setImmediate(){var handle=addFromSetImmediateArguments(arguments);process.nextTick(partiallyApplied(runIfPresent,handle));return handle;};}function canUsePostMessage(){var postMessageIsAsynchronous=void 0,oldOnMessage=void 0;if(global.postMessage&&!global.importScripts){postMessageIsAsynchronous=true;oldOnMessage=global.onmessage;global.onmessage=function(){postMessageIsAsynchronous=false;};global.postMessage('','*');global.onmessage=oldOnMessage;return postMessageIsAsynchronous;}}function installPostMessageImplementation(){var messagePrefix='setImmediate$'+Math.random()+'$',onGlobalMessage=function onGlobalMessage(event){if(event.source===global&&typeof event.data==='string'&&event.data.indexOf(messagePrefix)===0){runIfPresent(+event.data.slice(messagePrefix.length));}};if(global.addEventListener){global.addEventListener('message',onGlobalMessage,false);}else{global.attachEvent('onmessage',onGlobalMessage);}setImmediate=function setImmediate(){var handle=addFromSetImmediateArguments(arguments);global.postMessage(messagePrefix+handle,'*');return handle;};}function installMessageChannelImplementation(){var channel=new MessageChannel();channel.port1.onmessage=function(event){var handle=event.data;runIfPresent(handle);};setImmediate=function setImmediate(){var handle=addFromSetImmediateArguments(arguments);channel.port2.postMessage(handle);return handle;};}function installReadyStateChangeImplementation(){var html=doc.documentElement;setImmediate=function setImmediate(){var handle=addFromSetImmediateArguments(arguments),script=doc.createElement('script');script.onreadystatechange=function(){runIfPresent(handle);script.onreadystatechange=null;html.removeChild(script);};html.appendChild(script);return handle;};}function installSetTimeoutImplementation(){setImmediate=function setImmediate(){var handle=addFromSetImmediateArguments(arguments);setTimeout(partiallyApplied(runIfPresent,handle),0);return handle;};}attachTo=Object.getPrototypeOf&&Object.getPrototypeOf(global);attachTo=attachTo&&attachTo.setTimeout?attachTo:global;if({}.toString.call(global.process)==='[object process]'){installNextTickImplementation();}else if(canUsePostMessage()){installPostMessageImplementation();}else if(global.MessageChannel){installMessageChannelImplementation();}else if(doc&&'onreadystatechange'in doc.createElement('script')){installReadyStateChangeImplementation();}else{installSetTimeoutImplementation();}attachTo.setImmediate=setImmediate;attachTo.clearImmediate=clearImmediate;return setImmediate;}(new Function('return this')());// eslint-disable-line
+\**/
+/* istanbul ignore next: this is a polyfill */
+exports.default = function (global, undef) {
+    var tasksByHandle = {},
+        doc = global.document;
+    var nextHandle = 1,
+        currentlyRunningATask = false,
+        setImmediate = void 0,
+        attachTo = void 0;
+
+    if (global.setImmediate) {
+        return global.setImmediate;
+    }
+
+    function partiallyApplied(handler) {
+        var args = [].slice.call(arguments, 1);
+
+        return function () {
+            if (typeof handler === 'function') {
+                handler.apply(undef, args);
+            } else {
+                new Function('' + handler)(); // eslint-disable-line
+            }
+        };
+    }
+
+    function addFromSetImmediateArguments(args) {
+        tasksByHandle[nextHandle] = partiallyApplied.apply(undef, args);
+        return nextHandle++;
+    }
+
+    function runIfPresent(handle) {
+        var task = void 0;
+
+        if (currentlyRunningATask) {
+            setTimeout(partiallyApplied(runIfPresent, handle), 0);
+        } else {
+            task = tasksByHandle[handle];
+
+            if (task) {
+                currentlyRunningATask = true;
+
+                try {
+                    task();
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function installNextTickImplementation() {
+        setImmediate = function setImmediate() {
+            var handle = addFromSetImmediateArguments(arguments);
+
+            process.nextTick(partiallyApplied(runIfPresent, handle));
+
+            return handle;
+        };
+    }
+
+    function canUsePostMessage() {
+        var postMessageIsAsynchronous = void 0,
+            oldOnMessage = void 0;
+
+        if (global.postMessage && !global.importScripts) {
+            postMessageIsAsynchronous = true;
+            oldOnMessage = global.onmessage;
+
+            global.onmessage = function () {
+                postMessageIsAsynchronous = false;
+            };
+
+            global.postMessage('', '*');
+            global.onmessage = oldOnMessage;
+
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        var messagePrefix = 'setImmediate$' + Math.random() + '$',
+            onGlobalMessage = function onGlobalMessage(event) {
+            if (event.source === global && typeof event.data === 'string' && event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener('message', onGlobalMessage, false);
+        } else {
+            global.attachEvent('onmessage', onGlobalMessage);
+        }
+
+        setImmediate = function setImmediate() {
+            var handle = addFromSetImmediateArguments(arguments);
+
+            global.postMessage(messagePrefix + handle, '*');
+
+            return handle;
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+
+        channel.port1.onmessage = function (event) {
+            var handle = event.data;
+
+            runIfPresent(handle);
+        };
+
+        setImmediate = function setImmediate() {
+            var handle = addFromSetImmediateArguments(arguments);
+
+            channel.port2.postMessage(handle);
+            return handle;
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+
+        setImmediate = function setImmediate() {
+            var handle = addFromSetImmediateArguments(arguments),
+                script = doc.createElement('script');
+
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+            };
+
+            html.appendChild(script);
+
+            return handle;
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        setImmediate = function setImmediate() {
+            var handle = addFromSetImmediateArguments(arguments);
+
+            setTimeout(partiallyApplied(runIfPresent, handle), 0);
+
+            return handle;
+        };
+    }
+
+    attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    if ({}.toString.call(global.process) === '[object process]') {
+        installNextTickImplementation();
+    } else if (canUsePostMessage()) {
+        installPostMessageImplementation();
+    } else if (global.MessageChannel) {
+        installMessageChannelImplementation();
+    } else if (doc && 'onreadystatechange' in doc.createElement('script')) {
+        installReadyStateChangeImplementation();
+    } else {
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+
+    return setImmediate;
+}(new Function('return this')()); // eslint-disable-line

@@ -3,284 +3,284 @@ import Cache from 'base/cache';
 let cacheNum = 0;
 
 describe('the cache system', function() {
-	describe('interface', function() {
-		it('should default the channel to memory', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						expiration: 1000
-					});
-				}
-			}
+    describe('interface', function() {
+        it('should default the channel to memory', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        expiration: 1000
+                    });
+                }
+            }
 
-			const cache = new MyCache();
+            const cache = new MyCache();
 
-			expect(cache.channel).to.equal('memory');
-		});
+            expect(cache.channel).toEqual('memory');
+        });
 
-		it('should default the expiration to 0.5s', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++)
-					});
-				}
-			}
+        it('should default the expiration to 0.5s', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++)
+                    });
+                }
+            }
 
-			const cache = new MyCache();
+            const cache = new MyCache();
 
-			expect(cache.expiration).to.equal(500);
-		});
+            expect(cache.expiration).toEqual(500);
+        });
 
-		it('should inherit the classname as the key if not set', function() {
-			class MyCache extends Cache {
-			}
+        it('should inherit the classname as the key if not set', function() {
+            class MyCache extends Cache {
+            }
 
-			const cache = new MyCache();
+            const cache = new MyCache();
 
-			expect(cache.key).to.equal(cache.constructor.name);
-		});
+            expect(cache.key).toEqual(cache.constructor.name);
+        });
 
-		it('should not allow giberish in the channel', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						channel: 'giberish',
-						expiration: 1000
-					});
-				}
-			}
+        it('should not allow giberish in the channel', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'giberish',
+                        expiration: 1000
+                    });
+                }
+            }
 
-			expect(function() {
-				try {
-					new MyCache();
-				} catch(e) {
-					throw e;
-				}
-			}).to.throw(`Invalid storage mechanism sent to MyCache.channel`);
-		});
+            expect(function() {
+                try {
+                    new MyCache();
+                } catch (e) {
+                    throw e;
+                }
+            }).toThrow('Invalid storage mechanism sent to MyCache.channel');
+        });
 
-		it('should only allow integers in the expiration', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						expiration: 'beans'
-					});
-				}
-			}
+        it('should only allow integers in the expiration', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        expiration: 'beans'
+                    });
+                }
+            }
 
-			expect(function() {
-				try {
-					new MyCache();
-				} catch(e) {
-					throw e;
-				}
-			}).to.throw('Invalid expiration time set for MyCache.expiration');
-		});
+            expect(function() {
+                try {
+                    new MyCache();
+                } catch (e) {
+                    throw e;
+                }
+            }).toThrow('Invalid expiration time set for MyCache.expiration');
+        });
 
-		it('should keep cached as read-only', function() {
-			class MyCache extends Cache {}
+        it('should keep cached as read-only', function() {
+            class MyCache extends Cache {}
 
-			const cache = new MyCache();
+            const cache = new MyCache();
 
-			expect(function() {
-				cache.cached = 'beans';
-			}).to.throw('cached is a read only property');
-		});
-	});
+            expect(function() {
+                cache.cached = 'beans';
+            }).toThrow('cached is a read only property');
+        });
+    });
 
-	describe('memory cache', function() {
-		it('should populate', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						channel: 'memory',
-						expiration: 1000
-					});
-				}
-			}
+    describe('memory cache', function() {
+        it('should populate', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'memory',
+                        expiration: 1000
+                    });
+                }
+            }
 
-			const cache = new MyCache();
+            const cache = new MyCache();
 
-			expect(cache.cached).to.be.false;
+            expect(cache.cached).toBeFalsy();
 
-			cache.populate({
-				things: true,
-				yolo: 'beans'
-			});
+            cache.populate({
+                things: true,
+                yolo: 'beans'
+            });
 
-			expect(cache.cached).to.not.be.false;
-			expect(cache.cached.things).to.be.true;
-			expect(cache.cached.yolo).to.equal('beans');
-		});
+            expect(cache.cached).toBeTruthy();
+            expect(cache.cached.things).toBeTruthy();
+            expect(cache.cached.yolo).toEqual('beans');
+        });
 
-		it('should notify watchers if populated', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						channel: 'memory',
-						expiration: 1000
-					});
-				}
-			}
+        it('should notify watchers if populated', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'memory',
+                        expiration: 1000
+                    });
+                }
+            }
 
-			const spy = sinon.spy(),
-				cache = new MyCache();
+            const spy = jest.fn(),
+                cache = new MyCache();
 
-			cache.watch(spy);
+            cache.watch(spy);
 
-			expect(spy.callCount).to.equal(0);
+            expect(spy.mock.calls.length).toEqual(0);
 
-			cache.populate({
-				hashtag: 'yolo'
-			});
+            cache.populate({
+                hashtag: 'yolo'
+            });
 
-			expect(spy.callCount).to.equal(1);
+            expect(spy.mock.calls.length).toEqual(1);
 
-			expect(spy.args[0][0].hashtag).to.equal('yolo');
-		})
-	});
+            expect(spy.mock.calls[0][0].hashtag).toEqual('yolo');
+        });
+    });
 
-	describe('sessionStorage cache', function() {
-		it('should populate', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						channel: 'session',
-						expiration: 1000
-					});
-				}
-			}
+    describe('sessionStorage cache', function() {
+        it('should populate', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'session',
+                        expiration: 1000
+                    });
+                }
+            }
 
-			const cache = new MyCache();
+            const cache = new MyCache();
 
-			expect(cache.cached).to.be.false;
+            expect(cache.cached).toBeFalsy();
 
-			cache.populate({
-				things: true,
-				yolo: 'beans'
-			});
+            cache.populate({
+                things: true,
+                yolo: 'beans'
+            });
 
-			expect(cache.cached).to.not.be.false;
-			expect(cache.cached.things).to.be.true;
-			expect(cache.cached.yolo).to.equal('beans');
-		});
+            expect(cache.cached).toBeTruthy();
+            expect(cache.cached.things).toBeTruthy();
+            expect(cache.cached.yolo).toEqual('beans');
+        });
 
-		it('should notify watchers if populated', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						channel: 'session',
-						expiration: 1000
-					});
-				}
-			}
+        it('should notify watchers if populated', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'session',
+                        expiration: 1000
+                    });
+                }
+            }
 
-			const spy = sinon.spy(),
-				cache = new MyCache();
+            const spy = jest.fn(),
+                cache = new MyCache();
 
-			cache.watch(spy);
+            cache.watch(spy);
 
-			expect(spy.callCount).to.equal(0);
+            expect(spy.mock.calls.length).toEqual(0);
 
-			cache.populate({
-				hashtag: 'yolo'
-			});
+            cache.populate({
+                hashtag: 'yolo'
+            });
 
-			expect(spy.callCount).to.equal(1);
+            expect(spy.mock.calls.length).toEqual(1);
 
-			expect(spy.args[0][0].hashtag).to.equal('yolo');
-		})
-	});
+            expect(spy.mock.calls[0][0].hashtag).toEqual('yolo');
+        });
+    });
 
-	describe('localStorage cache', function() {
-		it('should populate', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						channel: 'local',
-						expiration: 1000
-					});
-				}
-			}
+    describe('localStorage cache', function() {
+        it('should populate', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'local',
+                        expiration: 1000
+                    });
+                }
+            }
 
-			const cache = new MyCache();
+            const cache = new MyCache();
 
-			expect(cache.cached).to.be.false;
+            expect(cache.cached).toBeFalsy();
 
-			cache.populate({
-				things: true,
-				yolo: 'beans'
-			});
+            cache.populate({
+                things: true,
+                yolo: 'beans'
+            });
 
-			expect(cache.cached).to.not.be.false;
-			expect(cache.cached.things).to.be.true;
-			expect(cache.cached.yolo).to.equal('beans');
-		});
+            expect(cache.cached).toBeTruthy();
+            expect(cache.cached.things).toBeTruthy();
+            expect(cache.cached.yolo).toEqual('beans');
+        });
 
-		it('should notify watchers if populated', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						channel: 'local',
-						expiration: 1000
-					});
-				}
-			}
+        it('should notify watchers if populated', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'local',
+                        expiration: 1000
+                    });
+                }
+            }
 
-			const spy = sinon.spy(),
-				cache = new MyCache();
+            const spy = jest.fn(),
+                cache = new MyCache();
 
-			cache.watch(spy);
+            cache.watch(spy);
 
-			expect(spy.callCount).to.equal(0);
+            expect(spy.mock.calls.length).toEqual(0);
 
-			cache.populate({
-				hashtag: 'yolo'
-			});
+            cache.populate({
+                hashtag: 'yolo'
+            });
 
-			expect(spy.callCount).to.equal(1);
+            expect(spy.mock.calls.length).toEqual(1);
 
-			expect(spy.args[0][0].hashtag).to.equal('yolo');
-		});
+            expect(spy.mock.calls[0][0].hashtag).toEqual('yolo');
+        });
 
-		it('should clear and tell people', function() {
-			class MyCache extends Cache {
-				constructor() {
-					super({
-						key: 'test-cache-' + (cacheNum++),
-						channel: 'local',
-						expiration: 1000
-					});
-				}
-			}
+        it('should clear and tell people', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'local',
+                        expiration: 1000
+                    });
+                }
+            }
 
-			const spy = sinon.spy(),
-				cache = new MyCache();
+            const spy = jest.fn(),
+                cache = new MyCache();
 
-			cache.populate({
-				things: true,
-				yolo: 'beans'
-			});
+            cache.populate({
+                things: true,
+                yolo: 'beans'
+            });
 
-			cache.watch(spy);
+            cache.watch(spy);
 
-			expect(spy.callCount).to.equal(0);
+            expect(spy.mock.calls.length).toEqual(0);
 
-			cache.clear();
+            cache.clear();
 
-			expect(cache.cached).to.be.false;
-			expect(spy.callCount).to.equal(1);
-			expect(spy.args[0][0]).to.be.false;
-		});
-	});
+            expect(cache.cached).toBeFalsy();
+            expect(spy.mock.calls.length).toEqual(1);
+            expect(spy.mock.calls[0][0]).toBeFalsy();
+        });
+    });
 });
