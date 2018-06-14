@@ -20,7 +20,9 @@
     "server"
   ],
   "dependencies": {
-    "continuation-local-storage": "^3.2.0"
+    "continuation-local-storage": "^3.2.0",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1"
   },
   "peerDependencies": {
     "react": "^16.4.1",
@@ -42,7 +44,8 @@
     "enzyme-adapter-react-16": "^1.1.1",
     "eslint": "^4.19.1",
     "eslint-plugin-react": "^7.9.1",
-    "jest": "^23.1.0"
+    "jest": "^23.1.0",
+    "jest-localstorage-mock": "^2.2.0"
   },
   "scripts": {
     "test": "npm run lint && NODE_ENV=test $(npm bin)/jest",
@@ -51,7 +54,10 @@
   },
   "jest": {
     "rootDir": "src",
-    "setupTestFrameworkScriptFile": "../setup-tests.js",
+    "setupFiles": [
+      "../setup-tests.js",
+      "jest-localstorage-mock"
+    ],
     "collectCoverage": true,
     "coverageDirectory": "../coverage",
     "collectCoverageFrom": [

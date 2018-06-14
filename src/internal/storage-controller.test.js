@@ -121,20 +121,14 @@ describe('Storage Controller', function() {
         storage.populate('local', 'key1', 20, 5);
         storage.populate('session', 'key1', 20, 5);
 
-        expect(storage.freshness('memory', 'key1') - now)
+        expect(Math.abs(storage.freshness('memory', 'key1') - now))
             .toBeLessThanOrEqual(10);
-        expect(storage.freshness('memory', 'key1') - now)
-            .toBeGreaterThanOrEqual(-10);
 
-        expect(storage.freshness('local', 'key1') - now)
+        expect(Math.abs(storage.freshness('local', 'key1') - now))
             .toBeLessThanOrEqual(10);
-        expect(storage.freshness('local', 'key1') - now)
-            .toBeGreaterThanOrEqual(-10);
 
-        expect(storage.freshness('session', 'key1') - now)
+        expect(Math.abs(storage.freshness('session', 'key1') - now))
             .toBeLessThanOrEqual(10);
-        expect(storage.freshness('session', 'key1') - now)
-            .toBeGreaterThanOrEqual(-10);
     });
 
     it('should inherit freshness', function(done) {
@@ -146,15 +140,15 @@ describe('Storage Controller', function() {
 
         setTimeout(() => {
             try {
-                expect(storage.freshness('memory', 'key1') - now)
+                expect(Math.abs(storage.freshness('memory', 'key1') - now))
                     .toBeLessThanOrEqual(5);
-                expect(storage.freshness('memory', 'key1') - now)
-                    .toBeGreaterThanOrEqual(-5);
 
                 setTimeout(() => {
                     try {
-                        expect(storage.freshness('memory', 'key1') - now)
-                            .toEqual(0);
+                        expect(
+                            Math.abs(storage.freshness('memory', 'key1') - now)
+                        )
+                            .toBeLessThanOrEqual(5);
                         done();
                     } catch (e) {
                         done(e);

@@ -41,12 +41,12 @@ describe('unifying storage interface', function() {
         store.session.clear();
         store.local.clear();
 
-        expect(store.memory.get('beans')).not.toBeDefined();
-        expect(store.session.get('beans')).not.toBeDefined();
-        expect(store.local.get('beans')).not.toBeDefined();
+        expect(store.memory.get('beans')).toBeFalsy();
+        expect(store.session.get('beans')).toBeFalsy();
+        expect(store.local.get('beans')).toBeFalsy();
 
-        expect(store.memory.get('beans1')).not.toBeDefined();
-        expect(store.session.get('beans1')).not.toBeDefined();
-        expect(store.local.get('beans1')).not.toBeDefined();
+        expect(store.memory.get('beans1')).toBeFalsy();
+        expect(store.session.get('beans1')).toBeFalsy();
+        expect(store.local.get('beans1')).toBeFalsy();
     });
 });
