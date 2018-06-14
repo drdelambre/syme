@@ -1,0 +1,40 @@
+{
+    "plugins": [
+        [
+            "module-resolver", {
+                "alias": {
+                    "base": "./src/",
+                    "internal": "./src/internal"
+                }
+            }
+        ],
+        "babel-plugin-transform-class-properties",
+        "babel-plugin-syntax-dynamic-import",
+        [
+            "babel-plugin-transform-runtime",
+            {
+                "helpers": true,
+                "polyfill": false,
+                "regenerator": true
+            }
+        ],
+        [
+            "babel-plugin-transform-object-rest-spread",
+            {
+                "useBuiltIns": true
+            }
+        ]
+    ],
+    "presets": [
+        "babel-preset-react",
+        [
+            "babel-preset-env", {
+                "modules": false,
+                "targets": {
+                    "ie9": true
+                },
+                "uglify": true
+            }
+        ]
+    ]
+}

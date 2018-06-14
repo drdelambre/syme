@@ -3,7 +3,7 @@ import ModelListener from 'base/model-listener';
 import Cache from 'base/cache';
 
 export {
-	Cache,
-	Model,
-	ModelListener
+    Cache,
+    Model,
+    ModelListener
 };

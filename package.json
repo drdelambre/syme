@@ -20,98 +20,49 @@
     "server"
   ],
   "dependencies": {
-    "continuation-local-storage": "^3.2.0"
+    "continuation-local-storage": "^3.2.0",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1"
   },
   "peerDependencies": {
     "react": "^15.1.0",
     "react-dom": "^15.1.0"
   },
   "devDependencies": {
-    "babel-cli": "6.18.0",
-    "babel-core": "6.18.2",
-    "babel-eslint": "7.1.0",
-    "babel-loader": "6.2.7",
-    "babel-plugin-module-alias": "^1.6.0",
-    "babel-plugin-transform-builtin-extend": "^1.1.0",
-    "babel-plugin-transform-react-constant-elements": "6.9.1",
-    "babel-plugin-transform-react-inline-elements": "6.8.0",
-    "babel-plugin-transform-regenerator": "^6.11.4",
-    "babel-preset-es2015-native-modules": "6.9.4",
-    "babel-preset-latest": "^6.16.0",
-    "babel-preset-react": "6.16.0",
-    "babel-preset-stage-0": "6.16.0",
-    "chai": "^3.3.0",
-    "chalk": "^1.1.1",
-    "enzyme": "^2.3.0",
-    "eslint": "3.10.2",
-    "eslint-loader": "1.6.1",
-    "eslint-plugin-react": "6.7.1",
-    "extract-text-webpack-plugin": "^1.0.1",
-    "isparta": "^4.0.0",
-    "isparta-loader": "^2.0.0",
-    "istanbul": "0.4.5",
-    "istanbul-instrumenter-loader": "1.0.0",
-    "karma": "1.3.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^8.2.3",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-module-resolver": "^3.1.1",
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "chai": "^4.1.2",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-16": "^1.1.1",
+    "eslint": "^4.19.1",
+    "eslint-plugin-react": "^7.9.1",
+    "istanbul-instrumenter-loader": "^3.0.1",
+    "karma": "^2.0.2",
     "karma-chai": "^0.1.0",
-    "karma-cli": "1.0.1",
-    "karma-coverage": "1.1.1",
-    "karma-mocha": "1.3.0",
-    "karma-phantomjs-launcher": "1.0.2",
-    "karma-phantomjs-shim": "^1.1.1",
-    "karma-sinon": "^1.0.4",
-    "karma-sourcemap-loader": "^0.3.5",
-    "karma-webpack": "^1.7.0",
-    "mocha": "3.1.2",
-    "phantomjs": "2.1.7",
-    "react": "^15.1.0",
-    "react-addons-test-utils": "^15.1.0",
-    "react-dom": "^15.1.0",
-    "react-test-renderer": "^15.5.4",
-    "sinon": "^1.17.1",
-    "webpack": "1.12.2"
-  },
-  "babel": {
-    "presets": [
-      [
-        "latest",
-        {
-          "es2015": true
-        }
-      ],
-      "react",
-      "stage-0"
-    ],
-    "plugins": [
-      [
-        "module-alias",
-        [
-          {
-            "src": "./src",
-            "expose": "base"
-          },
-          {
-            "src": "./src/internal",
-            "expose": "internal"
-          }
-        ]
-      ],
-      [
-        "transform-builtin-extend",
-        {
-          "globals": [
-            "Error"
-          ]
-        }
-      ],
-      "transform-regenerator",
-      "transform-react-constant-elements",
-      "transform-react-inline-elements"
-    ],
-    "compact": true
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage-istanbul-reporter": "^2.0.1",
+    "karma-mocha": "^1.3.0",
+    "karma-mocha-snapshot": "^0.2.1",
+    "karma-sinon": "^1.0.5",
+    "karma-snapshot": "^0.6.0",
+    "karma-webpack": "^3.0.0",
+    "mocha": "^5.2.0",
+    "sinon": "^6.0.0",
+    "webpack": "^4.12.0",
+    "yargs": "^11.0.0"
   },
   "scripts": {
-    "lint": "./node_modules/.bin/eslint -c ./tests/config/lint.json --ext .js --ext .jsx --ignore-path ./tests/config/lint-ignore ./src/",
-    "build": "$(npm bin)/babel -d dist/ src/",
-    "test": "npm run lint && ./node_modules/.bin/karma start ./tests/config/karma.conf.js --single-run"
+    "test": "NODE_ENV=test $(npm bin)/karma start ./build/karma.config.js",
+    "test:watch": "npm test -- --watch",
+    "lint": "$(npm bin)/eslint --ext .js --ext .jsx ./src/",
+    "build": "$(npm bin)/babel -d dist/ src/"
   }
 }

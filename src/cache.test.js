@@ -39,7 +39,7 @@ describe('the cache system', function() {
 
 			const cache = new MyCache();
 
-			expect(cache.key).to.equal('MyCache');
+			expect(cache.key).to.equal(cache.constructor.name);
 		});
 
 		it('should not allow giberish in the channel', function() {
@@ -59,7 +59,7 @@ describe('the cache system', function() {
 				} catch(e) {
 					throw e;
 				}
-			}).to.throw('Invalid storage mechanism sent to MyCache.channel');
+			}).to.throw(`Invalid storage mechanism sent to MyCache.channel`);
 		});
 
 		it('should only allow integers in the expiration', function() {
