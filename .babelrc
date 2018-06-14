@@ -11,14 +11,6 @@
         "transform-class-properties",
         "syntax-dynamic-import",
         [
-            "transform-runtime",
-            {
-                "helpers": true,
-                "polyfill": false,
-                "regenerator": true
-            }
-        ],
-        [
             "transform-object-rest-spread",
             {
                 "useBuiltIns": true

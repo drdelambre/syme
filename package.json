@@ -45,12 +45,13 @@
     "eslint": "^4.19.1",
     "eslint-plugin-react": "^7.9.1",
     "jest": "^23.1.0",
-    "jest-localstorage-mock": "^2.2.0"
+    "jest-localstorage-mock": "^2.2.0",
+    "uglify-js": "^3.4.0"
   },
   "scripts": {
     "test": "npm run lint && NODE_ENV=test $(npm bin)/jest",
     "lint": "$(npm bin)/eslint --ext .js --ext .jsx ./src/",
-    "build": "$(npm bin)/babel -d dist/ src/ --ignore '**/*.test.js'"
+    "build": "$(npm bin)/babel -d dist/ src/ --ignore '**/*.test.js' && node ./compress.js"
   },
   "jest": {
     "rootDir": "src",
