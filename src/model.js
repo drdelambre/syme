@@ -100,10 +100,10 @@ class Model {
                 TOSTR.call(no) === '[object Array]'
             ) {
                 this[ni] = new MagicArray(
-                        this._def,
-                        ni,
-                        this._changeThrottle
-                    );
+                    this._def,
+                    ni,
+                    this._changeThrottle
+                );
             } else {
                 this[ni] = no;
             }
@@ -186,8 +186,8 @@ class Model {
             }
 
             if (def[ni] instanceof Model ||
-                    (typeof def[ni] === 'function' &&
-                        def[ni].prototype instanceof Model)) {
+                (typeof def[ni] === 'function' &&
+                    def[ni].prototype instanceof Model)) {
                 this._def[ni] = {
                     'default': null,
                     value: new def[ni](),

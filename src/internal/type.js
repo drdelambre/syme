@@ -20,8 +20,8 @@ function type(variable, typeStr) {
 
         if (more === '[object Array]') {
             t = 'array';
-        /* istanbul ignore if: environment specific */
         } else if (more === '[object Null]') {
+            /* istanbul ignore next: environment specific */
             t = 'null';
         } else if (more === '[object Date]') {
             t = 'date';
