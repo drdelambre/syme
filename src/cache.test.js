@@ -1,4 +1,5 @@
 import Cache from 'base/cache';
+import Model from 'base/model';
 
 let cacheNum = 0;
 
@@ -89,6 +90,47 @@ describe('the cache system', function() {
             expect(function() {
                 cache.cached = 'beans';
             }).toThrow('cached is a read only property');
+        });
+
+        it('should utilize models', function() {
+            class MyModel extends Model {
+                constructor(data) {
+                    super({
+                        id: 12,
+                        name: 'yolo'
+                    });
+
+                    this.fill(data);
+                }
+            }
+
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        model: MyModel
+                    });
+                }
+            }
+
+            const cache = new MyCache(),
+                model = new MyModel({
+                    id: 23,
+                    name: 'jordan'
+                }),
+                spy = jest.fn();
+
+            cache.watch(spy);
+
+            cache.populate({
+                id: 34,
+                name: 'hashtag'
+            });
+
+            expect(spy.mock.calls[0][0]).toBeInstanceOf(MyModel);
+
+            cache.populate(model);
+
+            expect(cache.cached).toBeInstanceOf(MyModel);
         });
     });
 
