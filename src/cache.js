@@ -36,6 +36,10 @@ class Cache {
             ].join(' '));
         }
 
+        if (_def.model) {
+            this.model = _def.model;
+        }
+
         Object.defineProperty(this, 'cached', {
             get() {
                 const stored = StorageController.get(this.channel, this.key),
@@ -45,11 +49,18 @@ class Cache {
                     );
 
                 /* istanbul ignore if: cannot test this right now */
-                if (!fresh && Object.keys(stored).length) {
-                    return stored;
-                }
+                if (
+                    (!fresh && Object.keys(stored).length) ||
+                    (fresh && Date.now() - fresh < this.expiration)
+                ) {
+                    if (this.model) {
+                        const model = new this.model();
 
-                if (fresh && Date.now() - fresh < this.expiration) {
+                        model.fill(stored);
+
+                        return model;
+                    }
+
                     return stored;
                 }
 
@@ -72,11 +83,17 @@ class Cache {
     }
 
     populate(data) {
+        let _data = data;
+
+        if (this.model && data instanceof this.model) {
+            _data = data.out();
+        }
+
         StorageController.populate(
             this.channel,
             this.key,
             this.expiration,
-            data
+            _data
         );
 
         return this;
@@ -93,7 +110,15 @@ class Cache {
 
     watch(callback) {
         StorageController.register(this.channel, this.key, (data) => {
-            callback(data);
+            if (this.model) {
+                const model = new this.model();
+
+                model.fill(data);
+
+                callback(model);
+            } else {
+                callback(data);
+            }
         });
 
         return this;
