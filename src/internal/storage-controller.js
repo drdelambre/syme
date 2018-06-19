@@ -124,6 +124,32 @@ class StorageController {
 
         events[key].push(cb);
         store.memory.set('events', events);
+
+        return {
+            remove: () => {
+                this._unregister(
+                    channel,
+                    key,
+                    cb
+                );
+            }
+        };
+    }
+
+    _unregister(channel, key, cb) {
+        const events = store.memory.get('events') || {};
+
+        normalizeChannel(channel, 'unregister');
+
+        if (!events.hasOwnProperty(key)) {
+            throw new Error('Cannot unregister an unregistered event');
+        }
+
+        events[key] = events[key].filter((handler) => {
+            return handler !== cb;
+        });
+
+        store.memory.set('events', events);
     }
 
     // push some data. this will trigger any callbacks attached

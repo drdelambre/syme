@@ -314,4 +314,29 @@ describe('Storage Controller', function() {
         expect(spy1.mock.calls[0][0]).toEqual(12);
         expect(spy2.mock.calls[0][0]).toEqual(12);
     });
+
+    it('should be able to unregister a callback', function() {
+        const storage = new StorageController(),
+            spy = jest.fn(),
+
+            unregister = storage.register('memory', 'key', spy);
+
+        storage.populate('memory', 'key', null, 'data');
+
+        expect(spy.mock.calls.length).toEqual(1);
+
+        unregister.remove();
+
+        storage.populate('memory', 'key', null, 'more data');
+
+        expect(spy.mock.calls.length).toEqual(1);
+
+        expect(function() {
+            storage._unregister(
+                'memory',
+                'not_a_key',
+                () => {}
+            );
+        }).toThrow('Cannot unregister an unregistered event');
+    });
 });

@@ -109,7 +109,7 @@ class Cache {
     }
 
     watch(callback) {
-        StorageController.register(this.channel, this.key, (data) => {
+        return StorageController.register(this.channel, this.key, (data) => {
             if (this.model) {
                 const model = new this.model();
 
@@ -120,8 +120,6 @@ class Cache {
                 callback(data);
             }
         });
-
-        return this;
     }
 }
 
