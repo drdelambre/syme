@@ -186,6 +186,35 @@ describe('the cache system', function() {
 
             expect(spy.mock.calls[0][0].hashtag).toEqual('yolo');
         });
+
+        it('should not notify unregistered watchers', function() {
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'memory',
+                        expiration: 1000
+                    });
+                }
+            }
+
+            const spy = jest.fn(),
+                cache = new MyCache(),
+                unwatch = cache.watch(spy);
+
+            cache.populate({
+                data: 'test'
+            });
+
+            expect(spy.mock.calls.length).toEqual(1);
+            unwatch.remove();
+
+            cache.populate({
+                data: 'more test'
+            });
+
+            expect(spy.mock.calls.length).toEqual(1);
+        });
     });
 
     describe('sessionStorage cache', function() {
