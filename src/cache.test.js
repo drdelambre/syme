@@ -3,9 +3,9 @@ import Model from 'base/model';
 
 let cacheNum = 0;
 
-describe('the cache system', function() {
-    describe('interface', function() {
-        it('should default the channel to memory', function() {
+describe('the cache system', () => {
+    describe('interface', () => {
+        it('should default the channel to memory', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -20,7 +20,7 @@ describe('the cache system', function() {
             expect(cache.channel).toEqual('memory');
         });
 
-        it('should default the expiration to 0.5s', function() {
+        it('should default the expiration to 0.5s', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -34,7 +34,7 @@ describe('the cache system', function() {
             expect(cache.expiration).toEqual(500);
         });
 
-        it('should inherit the classname as the key if not set', function() {
+        it('should inherit the classname as the key if not set', () => {
             class MyCache extends Cache {
             }
 
@@ -43,7 +43,7 @@ describe('the cache system', function() {
             expect(cache.key).toEqual(cache.constructor.name);
         });
 
-        it('should not allow giberish in the channel', function() {
+        it('should not allow giberish in the channel', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -54,7 +54,7 @@ describe('the cache system', function() {
                 }
             }
 
-            expect(function() {
+            expect(() => {
                 try {
                     new MyCache();
                 } catch (e) {
@@ -63,7 +63,7 @@ describe('the cache system', function() {
             }).toThrow('Invalid storage mechanism sent to MyCache.channel');
         });
 
-        it('should only allow integers in the expiration', function() {
+        it('should only allow integers in the expiration', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -73,7 +73,7 @@ describe('the cache system', function() {
                 }
             }
 
-            expect(function() {
+            expect(() => {
                 try {
                     new MyCache();
                 } catch (e) {
@@ -82,17 +82,17 @@ describe('the cache system', function() {
             }).toThrow('Invalid expiration time set for MyCache.expiration');
         });
 
-        it('should keep cached as read-only', function() {
+        it('should keep cached as read-only', () => {
             class MyCache extends Cache {}
 
             const cache = new MyCache();
 
-            expect(function() {
+            expect(() => {
                 cache.cached = 'beans';
             }).toThrow('cached is a read only property');
         });
 
-        it('should utilize models', function() {
+        it('should utilize models', () => {
             class MyModel extends Model {
                 constructor(data) {
                     super({
@@ -132,10 +132,70 @@ describe('the cache system', function() {
 
             expect(cache.cached).toBeInstanceOf(MyModel);
         });
+
+        it('should utilize arrays of models', () => {
+            class MyModel extends Model {
+                constructor(data) {
+                    super({
+                        id: 12,
+                        name: 'yolo'
+                    });
+
+                    this.fill(data);
+                }
+            }
+
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        model: [ MyModel ]
+                    });
+                }
+            }
+
+            const cache = new MyCache(),
+                models = [
+                    new MyModel({
+                        id: 15,
+                        name: 'hashtag'
+                    }),
+                    new MyModel({
+                        id: 34,
+                        name: 'beans'
+                    })
+                ],
+                spy = jest.fn();
+
+            cache.watch(spy);
+
+            cache.populate(models);
+
+            expect(Object.prototype.call(spy.mock.calls[0][0]))
+                .toEqual('[object Array]');
+            expect(spy.mock.calls[0][0][0])
+                .toBeInstanceOf(MyModel);
+            expect(spy.mock.calls[0][0][1])
+                .toBeInstanceOf(MyModel);
+
+            cache.populate([ {
+                id: 12,
+                name: 'pinto'
+            }, {
+                id: 64,
+                name: 'yolo'
+            } ]);
+
+            expect(Object.prototype.call(spy.mock.calls[1][0]))
+                .toEqual('[object Array]');
+            expect(spy.mock.calls[1][0][0])
+                .toBeInstanceOf(MyModel);
+            expect(spy.mock.calls[1][0][1])
+                .toBeInstanceOf(MyModel);
+        });
     });
 
-    describe('memory cache', function() {
-        it('should populate', function() {
+    describe('memory cache', () => {
+        it('should populate', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -160,7 +220,7 @@ describe('the cache system', function() {
             expect(cache.cached.yolo).toEqual('beans');
         });
 
-        it('should notify watchers if populated', function() {
+        it('should notify watchers if populated', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -187,7 +247,7 @@ describe('the cache system', function() {
             expect(spy.mock.calls[0][0].hashtag).toEqual('yolo');
         });
 
-        it('should not notify unregistered watchers', function() {
+        it('should not notify unregistered watchers', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -217,8 +277,8 @@ describe('the cache system', function() {
         });
     });
 
-    describe('sessionStorage cache', function() {
-        it('should populate', function() {
+    describe('sessionStorage cache', () => {
+        it('should populate', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -243,7 +303,7 @@ describe('the cache system', function() {
             expect(cache.cached.yolo).toEqual('beans');
         });
 
-        it('should notify watchers if populated', function() {
+        it('should notify watchers if populated', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -271,8 +331,8 @@ describe('the cache system', function() {
         });
     });
 
-    describe('localStorage cache', function() {
-        it('should populate', function() {
+    describe('localStorage cache', () => {
+        it('should populate', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -297,7 +357,7 @@ describe('the cache system', function() {
             expect(cache.cached.yolo).toEqual('beans');
         });
 
-        it('should notify watchers if populated', function() {
+        it('should notify watchers if populated', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
@@ -324,7 +384,7 @@ describe('the cache system', function() {
             expect(spy.mock.calls[0][0].hashtag).toEqual('yolo');
         });
 
-        it('should clear and tell people', function() {
+        it('should clear and tell people', () => {
             class MyCache extends Cache {
                 constructor() {
                     super({
