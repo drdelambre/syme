@@ -1,4 +1,5 @@
 import StorageController from 'internal/storage-controller';
+import Observer from 'internal/observer';
 
 /**\
 
@@ -13,6 +14,8 @@ class Cache {
         this.key = _def.key || this.constructor.name;
         this.channel = _def.channel || 'memory';
         this.expiration = parseInt(_def.expiration || 500, 10);
+
+        this.controller = StorageController;
 
         if (!/^(memory|local|session)$/.test(this.channel)) {
             throw new Error([
@@ -42,8 +45,8 @@ class Cache {
 
         Object.defineProperty(this, 'cached', {
             get() {
-                const stored = StorageController.get(this.channel, this.key),
-                    fresh = StorageController.freshness(
+                const stored = this.controller.get(this.channel, this.key),
+                    fresh = this.controller.freshness(
                         this.channel,
                         this.key
                     );
@@ -67,7 +70,7 @@ class Cache {
                 /* istanbul ignore if: cannot test this right now */
                 if (fresh) {
                     //delete cache entry
-                    StorageController.remove(
+                    this.controller.remove(
                         this.channel,
                         this.key,
                         false
@@ -89,7 +92,7 @@ class Cache {
             _data = data.out();
         }
 
-        StorageController.populate(
+        this.controller.populate(
             this.channel,
             this.key,
             this.expiration,
@@ -100,7 +103,7 @@ class Cache {
     }
 
     clear() {
-        StorageController.remove(
+        this.controller.remove(
             this.channel,
             this.key
         );
@@ -109,7 +112,7 @@ class Cache {
     }
 
     watch(callback) {
-        return StorageController.register(this.channel, this.key, (data) => {
+        return this.controller.register(this.channel, this.key, (data) => {
             if (this.model) {
                 const model = new this.model();
 
@@ -120,6 +123,90 @@ class Cache {
                 callback(data);
             }
         });
+    }
+
+    // sometimes we want to override the default storage mechanism
+    registerWorker(worker, shared = true) {
+        const _worker = shared ? worker.port : worker;
+        const out = {
+            populate(channel, key, expiration, data) {
+                _worker.postMessage({
+                    action: 'update',
+                    payload: {
+                        channel: channel,
+                        key: key,
+                        expiration: expiration,
+                        data: data
+                    }
+                });
+            },
+            freshness(channel, key) { // eslint-disable-line
+                return out._exp;
+            },
+            remove(channel, key, shouldUpdate) {
+                delete out._exp;
+
+                _worker.postMessage({
+                    action: 'remove',
+                    payload: {
+                        channel: channel,
+                        key: key,
+                        shouldUpdate: shouldUpdate
+                    }
+                });
+            },
+            register: (() => {
+                const ob = new Observer(),
+                    ret = (channel, key, cb) => {
+                        return ob(cb);
+                    };
+
+                ret.fire = (...args) => { ob.fire.apply(ob, args); };
+
+                return ret;
+            })()
+        };
+
+        _worker.addEventListener('message', (evt) => {
+            // all update messages should follow the format
+            // of {
+            //     action: 'update',
+            //     payload: { channel, key, expiration, data }
+            // }
+
+            if (evt.data.action !== 'update') {
+                return;
+            }
+
+            const {
+                channel,
+                key,
+                expiration,
+                data
+            } = evt.data.payload;
+
+            if (
+                channel !== this.channel ||
+                key !== this.key
+            ) {
+                return;
+            }
+
+            out._exp = expiration;
+            out.register.fire(data);
+        });
+
+        if (shared) {
+            _worker.postMessage({
+                action: 'register',
+                payload: {
+                    channel: this.channel,
+                    key: this.key
+                }
+            });
+        }
+
+        this.controller = out;
     }
 }
 

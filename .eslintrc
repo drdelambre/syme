@@ -11,7 +11,10 @@
     "__dirname": true,
 
     "jest": true,
-    "expect": true
+    "expect": true,
+
+    "onconnect": true,
+    "Uint8Array": true
   },
   "plugins": [
     "react"
