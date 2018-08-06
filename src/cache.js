@@ -83,10 +83,28 @@ class Cache {
     }
 
     populate(data) {
-        let _data = data;
+        let _data = data,
+            _model = this.model;
 
-        if (this.model && data instanceof this.model) {
-            _data = data.out();
+        if (this.model) {
+            if (
+                Object.prototype
+                    .toString.call(this.model) === '[object Array]'
+            ) {
+                _model = this.model[0];
+            }
+
+            if (Object.prototype.toString.call(data) === '[object Array]') {
+                _data = data.map((d) => {
+                    if (d instanceof _model) {
+                        return d.out();
+                    }
+
+                    return d;
+                });
+            } else if (data instanceof _model) {
+                _data = data.out();
+            }
         }
 
         StorageController.populate(
@@ -110,15 +128,29 @@ class Cache {
 
     watch(callback) {
         return StorageController.register(this.channel, this.key, (data) => {
+            let _model = this.model,
+                _data = data;
+
             if (this.model) {
-                const model = new this.model();
+                if (
+                    Object.prototype
+                        .toString.call(this.model) === '[object Array]'
+                ) {
+                    _model = this.model[0];
+                }
 
-                model.fill(data);
-
-                callback(model);
-            } else {
-                callback(data);
+                if (
+                    Object.prototype.toString.call(data) === '[object Array]'
+                ) {
+                    _data = data.map((d) => {
+                        return new _model(d);
+                    });
+                } else {
+                    _data = new _model(data);
+                }
             }
+
+            callback(_data);
         });
     }
 }

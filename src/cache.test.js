@@ -170,7 +170,7 @@ describe('the cache system', () => {
 
             cache.populate(models);
 
-            expect(Object.prototype.call(spy.mock.calls[0][0]))
+            expect(Object.prototype.toString.call(spy.mock.calls[0][0]))
                 .toEqual('[object Array]');
             expect(spy.mock.calls[0][0][0])
                 .toBeInstanceOf(MyModel);
@@ -185,7 +185,7 @@ describe('the cache system', () => {
                 name: 'yolo'
             } ]);
 
-            expect(Object.prototype.call(spy.mock.calls[1][0]))
+            expect(Object.prototype.toString.call(spy.mock.calls[1][0]))
                 .toEqual('[object Array]');
             expect(spy.mock.calls[1][0][0])
                 .toBeInstanceOf(MyModel);
