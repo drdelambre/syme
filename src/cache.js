@@ -1,5 +1,6 @@
 import StorageController from 'internal/storage-controller';
 import Observer from 'internal/observer';
+import uuid from 'internal/uuid';
 
 /**\
 
@@ -45,39 +46,41 @@ class Cache {
 
         Object.defineProperty(this, 'cached', {
             get() {
-                const stored = this.controller.get(this.channel, this.key),
-                    fresh = this.controller.freshness(
-                        this.channel,
-                        this.key
-                    );
+                const fresh = this.controller.freshness(
+                    this.channel,
+                    this.key
+                );
 
-                /* istanbul ignore if: cannot test this right now */
-                if (
-                    (!fresh && Object.keys(stored).length) ||
-                    (fresh && Date.now() - fresh < this.expiration)
-                ) {
-                    if (this.model) {
-                        const model = new this.model();
+                return this.controller.get(this.channel, this.key)
+                    .then((stored) => {
+                        /* istanbul ignore if: cannot test this right now */
+                        if (
+                            (!fresh && Object.keys(stored).length) ||
+                            (fresh && Date.now() - fresh < this.expiration)
+                        ) {
+                            if (this.model) {
+                                const model = new this.model();
 
-                        model.fill(stored);
+                                model.fill(stored);
 
-                        return model;
-                    }
+                                return model;
+                            }
 
-                    return stored;
-                }
+                            return stored;
+                        }
 
-                /* istanbul ignore if: cannot test this right now */
-                if (fresh) {
-                    //delete cache entry
-                    this.controller.remove(
-                        this.channel,
-                        this.key,
-                        false
-                    );
-                }
+                        /* istanbul ignore if: cannot test this right now */
+                        if (fresh) {
+                            //delete cache entry
+                            this.controller.remove(
+                                this.channel,
+                                this.key,
+                                false
+                            );
+                        }
 
-                return false;
+                        return false;
+                    });
             },
             set() {
                 throw new Error('cached is a read only property');
@@ -127,7 +130,8 @@ class Cache {
 
     // sometimes we want to override the default storage mechanism
     registerWorker(worker, shared = true) {
-        const _worker = shared ? worker.port : worker;
+        const _worker = shared ? worker.port : worker,
+            fetcher = new Observer();
         const out = {
             populate(channel, key, expiration, data) {
                 _worker.postMessage({
@@ -138,6 +142,30 @@ class Cache {
                         expiration: expiration,
                         data: data
                     }
+                });
+            },
+            get(channel, key) {
+                return new Promise((f) => {
+                    const id = uuid(),
+                        ob = fetcher((evt) => {
+                            /* istanbul ignore if: seems really hard to test */
+                            if (evt.payload.uuid !== id) {
+                                return;
+                            }
+
+                            f(evt.payload.data);
+
+                            ob.remove();
+                        });
+
+                    _worker.postMessage({
+                        action: 'query',
+                        payload: {
+                            channel: channel,
+                            key: key,
+                            uuid: id
+                        }
+                    });
                 });
             },
             freshness(channel, key) { // eslint-disable-line
@@ -173,6 +201,11 @@ class Cache {
             //     action: 'update',
             //     payload: { channel, key, expiration, data }
             // }
+
+            if (evt.data.action === 'query') {
+                fetcher.fire(evt.data);
+                return;
+            }
 
             if (evt.data.action !== 'update') {
                 return;

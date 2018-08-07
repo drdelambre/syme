@@ -14,7 +14,9 @@
     "expect": true,
 
     "onconnect": true,
-    "Uint8Array": true
+    "Uint8Array": true,
+    "Promise": true,
+    "setImmediate": true
   },
   "plugins": [
     "react"

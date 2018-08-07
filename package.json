@@ -29,6 +29,7 @@
     "react-dom": "^16.4.1"
   },
   "devDependencies": {
+    "@trust/webcrypto": "^0.9.2",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
@@ -64,7 +65,8 @@
     "collectCoverageFrom": [
       "**/*.js",
       "!index.js",
-      "!internal/setImmediate.js"
+      "!internal/setImmediate.js",
+      "!example.worker.js"
     ],
     "coverageThreshold": {
       "global": {

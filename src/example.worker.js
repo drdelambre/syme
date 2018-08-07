@@ -67,13 +67,26 @@ function remove(channel, key, shouldUpdate = true) {
     });
 }
 
+function query(channel, key, port, uuid) {
+    const data = channels[channel].store.get(key);
+
+    port.postMessage({
+        action: 'query',
+        payload: {
+            uuid: uuid,
+            data: data
+        }
+    });
+}
+
 onconnect = (e) => {
     const port = e.ports[0];
     let channel,
         key,
         expiration,
         data,
-        shouldUpdate;
+        shouldUpdate,
+        uuid;
 
     port.addEventListener('message', (e) => {
         if (!e.data.hasOwnProperty('action')) {
@@ -123,6 +136,22 @@ onconnect = (e) => {
                     channel,
                     key,
                     shouldUpdate
+                );
+
+                break;
+
+            case 'query':
+                ({
+                    channel,
+                    key,
+                    uuid
+                } = e.data.payload);
+
+                query(
+                    channel,
+                    key,
+                    port,
+                    uuid
                 );
 
                 break;

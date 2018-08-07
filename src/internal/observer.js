@@ -1,30 +1,4 @@
-const ALPHA = '0123456789' +
-    'abcdefghijklmnopqrstuvwxyz' +
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    random = (() => {
-        if (typeof window === 'undefined') {
-            return require('crypto').randomBytes;
-        }
-
-        return (bytes) => {
-            return (window.crypto || window.msCrypto)
-                .getRandomValues(new Uint8Array(bytes));
-        };
-    })();
-
-function uuid(size = 21) {
-    const bytes = random(size);
-    let id = '',
-        _size = size;
-
-    while (_size-- > 0) {
-        id += ALPHA[bytes[_size] & 61];
-    }
-
-    return id;
-}
-
-export { uuid };
+import uuid from 'internal/uuid';
 
 export default function Observer() {
     const cbs = {},
@@ -37,6 +11,7 @@ export default function Observer() {
             let id = uuid(),
                 collisions = 0;
 
+            /* istanbul ignore next: just for piece of mind */
             while (cbs.hasOwnProperty(id)) {
                 if (++collisions > maxCollisions) {
                     throw new Error('Max collisions hit in observer');
