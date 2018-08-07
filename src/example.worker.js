@@ -69,6 +69,11 @@ function remove(channel, key, shouldUpdate = true) {
 
 onconnect = (e) => {
     const port = e.ports[0];
+    let channel,
+        key,
+        expiration,
+        data,
+        shouldUpdate;
 
     port.addEventListener('message', (e) => {
         if (!e.data.hasOwnProperty('action')) {
@@ -77,10 +82,10 @@ onconnect = (e) => {
 
         switch (e.data.action) {
             case 'register':
-                const {
+                ({
                     channel,
                     key
-                } = e.data.payload;
+                } = e.data.payload);
 
                 register(
                     channel,
@@ -91,12 +96,12 @@ onconnect = (e) => {
                 break;
 
             case 'update':
-                const {
+                ({
                     channel,
                     key,
                     expiration,
                     data
-                } = e.data.payload;
+                } = e.data.payload);
 
                 update(
                     channel,
@@ -108,11 +113,11 @@ onconnect = (e) => {
                 break;
 
             case 'remove':
-                const {
+                ({
                     channel,
                     key,
                     shouldUpdate
-                } = e.data.payload;
+                } = e.data.payload);
 
                 remove(
                     channel,
