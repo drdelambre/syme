@@ -1,7 +1,7 @@
 import type from 'base/internal/type.js';
 
-describe('type checker', function() {
-    it('should check an array', function() {
+describe('type checker', () => {
+    it('should check an array', () => {
         expect(type([])).toEqual('array');
         expect(type([], 'array')).toBeTruthy();
         expect(type(12, 'array')).toBeFalsy();
@@ -9,26 +9,26 @@ describe('type checker', function() {
         expect(type(12, 'array,number')).toBeTruthy();
     });
 
-    it('should match objects', function() {
+    it('should match objects', () => {
         expect(type({})).toEqual('object');
         expect(type({}, 'object')).toBeTruthy();
         expect(type([], 'object')).toBeFalsy();
     });
 
-    it('should match a date', function() {
+    it('should match a date', () => {
         expect(type(new Date())).toEqual('date');
         expect(type(new Date(), 'date')).toBeTruthy();
         expect(type({}, 'date')).toBeFalsy();
     });
 
-    it('should match null and undefined', function() {
+    it('should match null and undefined', () => {
         expect(type(null)).toEqual('null');
         expect(type(null, 'null')).toBeTruthy();
         expect(type(undefined)).toEqual('undefined');
         expect(type(undefined, 'undefined')).toBeTruthy();
     });
 
-    it('should know dom nodes', function() {
+    it('should know dom nodes', () => {
         var div = document.createElement('div');
 
         div.innerHTML = 'beans';

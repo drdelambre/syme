@@ -6,8 +6,8 @@ import {
     channels
 } from 'base/pubsub';
 
-describe('Pubsub', function() {
-    it('should publish to all direct subscribers', function(done) {
+describe('Pubsub', () => {
+    it('should publish to all direct subscribers', (done) => {
         const spy1 = jest.fn(),
             spy2 = jest.fn();
 
@@ -16,7 +16,7 @@ describe('Pubsub', function() {
 
         pub('/sub/channel', 'beans');
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy1.mock.calls.length).toEqual(1);
                 expect(spy2.mock.calls.length).toEqual(1);
@@ -27,7 +27,7 @@ describe('Pubsub', function() {
         }, 15);
     });
 
-    it('should publish to wildcard channels', function(done) {
+    it('should publish to wildcard channels', (done) => {
         const spy1 = jest.fn(),
             spy2 = jest.fn();
 
@@ -39,7 +39,7 @@ describe('Pubsub', function() {
         pub('/sub/1337', 'beans');
         pub('/sub', 'beans');
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy1.mock.calls.length).toEqual(1);
                 expect(spy2.mock.calls.length).toEqual(2);
@@ -50,7 +50,7 @@ describe('Pubsub', function() {
         }, 15);
     });
 
-    it('should allow unsubing', function(done) {
+    it('should allow unsubing', (done) => {
         const spy1 = jest.fn(),
             spy2 = jest.fn();
 
@@ -61,7 +61,7 @@ describe('Pubsub', function() {
 
         pub('/sub/channel', 'beans');
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy1.mock.calls.length).toEqual(0);
                 expect(spy2.mock.calls.length).toEqual(1);
@@ -72,7 +72,7 @@ describe('Pubsub', function() {
         }, 15);
     });
 
-    it('should clear for tests', function(done) {
+    it('should clear for tests', (done) => {
         const spy1 = jest.fn();
 
         sub('/sub/channel', spy1);
@@ -81,7 +81,7 @@ describe('Pubsub', function() {
 
         pub('/sub/channel', 'beans');
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy1.mock.calls.length).toEqual(0);
                 done();
@@ -91,7 +91,7 @@ describe('Pubsub', function() {
         }, 15);
     });
 
-    it('should let you know what channels are listening', function() {
+    it('should let you know what channels are listening', () => {
         jest.spyOn(console, 'log');
 
         sub('/sub/channel/1337', () => {});

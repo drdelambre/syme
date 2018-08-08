@@ -30,20 +30,20 @@ class WithModel extends ModelListener {
     }
 }
 
-describe('ModelListener', function() {
-    it('should throw an error if no model is defined', function() {
-        expect(function() {
+describe('ModelListener', () => {
+    it('should throw an error if no model is defined', () => {
+        expect(() => {
             shallow(<NoModel />);
         }).toThrow('ModelListener requires a model');
     });
 
-    it('should not accept gibberish', function() {
-        expect(function() {
+    it('should not accept gibberish', () => {
+        expect(() => {
             shallow(<NoModel model={ 'yolo' } />);
         }).toThrow('A model listener needs a model definition somewhere');
     });
 
-    it('should initialize without a model', function() {
+    it('should initialize without a model', () => {
         const withoutModel = shallow(
             <WithModel />,
             { disableLifecycleMethods: true }
@@ -54,7 +54,7 @@ describe('ModelListener', function() {
         expect(withoutModel.instance().model.name).toEqual('');
     });
 
-    it('should initialize with a model', function() {
+    it('should initialize with a model', () => {
         const fullModel = new BasicModel({
                 id: 7,
                 name: 'beans'
@@ -81,7 +81,7 @@ describe('ModelListener', function() {
         expect(withJson.instance().model.name).toEqual('hashtag');
     });
 
-    it('should update the model from the view', function(done) {
+    it('should update the model from the view', (done) => {
         const model = new BasicModel(),
             wrapper = mount(<WithModel model={ model } />),
             spy = jest.fn();
@@ -91,7 +91,7 @@ describe('ModelListener', function() {
         wrapper.instance().update('name', 'yolo');
 
         // there's some throttling of var changes in here
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
                 expect(model.name).toEqual('yolo');
@@ -102,7 +102,7 @@ describe('ModelListener', function() {
         }, 100);
     });
 
-    it('should allow bind scope', function() {
+    it('should allow bind scope', () => {
         const model = new BasicModel(),
             spy = jest.fn();
 

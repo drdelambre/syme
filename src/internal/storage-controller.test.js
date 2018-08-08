@@ -1,8 +1,8 @@
 import { StorageController } from 'base/internal/storage-controller';
 import store from 'base/internal/storage';
 
-describe('Storage Controller', function() {
-    beforeEach(function() {
+describe('Storage Controller', () => {
+    beforeEach(() => {
         store.memory.clear();
         store.session.clear();
         store.local.clear();
@@ -10,35 +10,35 @@ describe('Storage Controller', function() {
         delete window.StorageController;
     });
 
-    it('should explode on jibber jabber', function() {
+    it('should explode on jibber jabber', () => {
         window.StorageController = 'jibber jabber';
 
         /* eslint-disable max-len */
-        expect(function() {
+        expect(() => {
             new StorageController();
         }).toThrow('Invalid string passed through window.StorageController');
 
         window.StorageController = 'W10=';
 
-        expect(function() {
+        expect(() => {
             new StorageController();
         }).toThrow('Invalid string passed through window.StorageController');
 
         window.StorageController = 'e30=';
 
-        expect(function() {
+        expect(() => {
             new StorageController();
         }).not.toThrow('Invalid string passed through window.StorageController');
 
         delete window.StorageController;
 
-        expect(function() {
+        expect(() => {
             new StorageController();
         }).not.toThrow('Invalid string passed through window.StorageController');
         /* eslint-enable max-len */
     });
 
-    it('should prepopulate', function(done) {
+    it('should prepopulate', (done) => {
         window.StorageController = btoa(JSON.stringify({
             memory: {
                 key1: 1,
@@ -75,7 +75,7 @@ describe('Storage Controller', function() {
         }, 50);
     });
 
-    it('should not update the freshness on prepopulate', function() {
+    it('should not update the freshness on prepopulate', () => {
         window.StorageController = btoa(JSON.stringify({
             memory: {
                 key1: 1,
@@ -98,7 +98,7 @@ describe('Storage Controller', function() {
         expect(storage.freshness('session', 'key1')).toEqual(0);
     });
 
-    it('should update the freshness on populate', function() {
+    it('should update the freshness on populate', () => {
         window.StorageController = btoa(JSON.stringify({
             memory: {
                 key1: 1,
@@ -131,7 +131,7 @@ describe('Storage Controller', function() {
             .toBeLessThanOrEqual(10);
     });
 
-    it('should inherit freshness', function(done) {
+    it('should inherit freshness', (done) => {
         const storage = new StorageController(),
             now = Date.now();
 
@@ -160,7 +160,7 @@ describe('Storage Controller', function() {
         }, 15);
     });
 
-    it('should remove stuff when asked to', function() {
+    it('should remove stuff when asked to', () => {
         const storage = new StorageController();
 
         storage.populate('memory', 'key1', 20, 5);
@@ -183,7 +183,7 @@ describe('Storage Controller', function() {
         expect(Object.keys(storage.get('session', 'key1')).length).toEqual(0);
     });
 
-    it('should prune old stuff', function() {
+    it('should prune old stuff', () => {
         const spy = jest.fn();
 
         class StorageControllerStub extends StorageController {
@@ -231,7 +231,7 @@ describe('Storage Controller', function() {
         });
     });
 
-    it('should serialize', function(done) {
+    it('should serialize', (done) => {
         window.StorageController = btoa(JSON.stringify({
             memory: {
                 key1: 1,
@@ -261,7 +261,7 @@ describe('Storage Controller', function() {
         }, 50);
     });
 
-    it('should serialize when empty', function() {
+    it('should serialize when empty', () => {
         const storage = new StorageController(),
             out = storage._out();
 
@@ -272,33 +272,33 @@ describe('Storage Controller', function() {
         }));
     });
 
-    it('should make a super cool string for the server', function() {
+    it('should make a super cool string for the server', () => {
         const storage = new StorageController(),
             out = storage.out();
 
         expect(out).toEqual('window.StorageController = \"eyJtZW1vcnkiOnt9LCJsb2NhbCI6e30sInNlc3Npb24iOnt9fQ==\";'); // eslint-disable-line max-len
     });
 
-    it('should yell when perverted', function() {
+    it('should yell when perverted', () => {
         const storage = new StorageController();
 
         /* eslint-disable max-len */
-        expect(function() {
+        expect(() => {
             storage.populate('beans', 'yolo', 150, 'hashtag');
         }).toThrow('Invalid storage mechanism sent to StorageController.populate');
-        expect(function() {
-            storage.register('beans', 'yolo', function() {});
+        expect(() => {
+            storage.register('beans', 'yolo', () => {});
         }).toThrow('Invalid storage mechanism sent to StorageController.register');
-        expect(function() {
+        expect(() => {
             storage.get('beans', 'yolo');
         }).toThrow('Invalid storage mechanism sent to StorageController.get');
-        expect(function() {
+        expect(() => {
             storage.freshness('beans', 'yolo');
         }).toThrow('Invalid storage mechanism sent to StorageController.freshness');
         /* eslint-enable max-len */
     });
 
-    it('should not cry about empty registrations', function() {
+    it('should not cry about empty registrations', () => {
         const storage = new StorageController();
 
         storage.register('memory', 'key1');
@@ -306,7 +306,7 @@ describe('Storage Controller', function() {
         storage.populate('memory', 'key1', 150, 12);
     });
 
-    it('should register multiple callbacks', function() {
+    it('should register multiple callbacks', () => {
         const storage = new StorageController(),
             spy1 = jest.fn(),
             spy2 = jest.fn();
@@ -322,7 +322,7 @@ describe('Storage Controller', function() {
         expect(spy2.mock.calls[0][0]).toEqual(12);
     });
 
-    it('should be able to unregister a callback', function() {
+    it('should be able to unregister a callback', () => {
         const storage = new StorageController(),
             spy = jest.fn(),
 
@@ -338,7 +338,7 @@ describe('Storage Controller', function() {
 
         expect(spy.mock.calls.length).toEqual(1);
 
-        expect(function() {
+        expect(() => {
             storage._unregister(
                 'memory',
                 'not_a_key',

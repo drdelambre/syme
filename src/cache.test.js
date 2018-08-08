@@ -132,6 +132,66 @@ describe('the cache system', () => {
 
             return expect(cache.cached).resolves.toBeInstanceOf(MyModel);
         });
+
+        it('should utilize arrays of models', () => {
+            class MyModel extends Model {
+                constructor(data) {
+                    super({
+                        id: 12,
+                        name: 'yolo'
+                    });
+
+                    this.fill(data);
+                }
+            }
+
+            class MyCache extends Cache {
+                constructor() {
+                    super({
+                        model: [ MyModel ]
+                    });
+                }
+            }
+
+            const cache = new MyCache(),
+                models = [
+                    new MyModel({
+                        id: 15,
+                        name: 'hashtag'
+                    }),
+                    new MyModel({
+                        id: 34,
+                        name: 'beans'
+                    })
+                ],
+                spy = jest.fn();
+
+            cache.watch(spy);
+
+            cache.populate(models);
+
+            expect(Object.prototype.toString.call(spy.mock.calls[0][0]))
+                .toEqual('[object Array]');
+            expect(spy.mock.calls[0][0][0])
+                .toBeInstanceOf(MyModel);
+            expect(spy.mock.calls[0][0][1])
+                .toBeInstanceOf(MyModel);
+
+            cache.populate([ {
+                id: 12,
+                name: 'pinto'
+            }, {
+                id: 64,
+                name: 'yolo'
+            } ]);
+
+            expect(Object.prototype.toString.call(spy.mock.calls[1][0]))
+                .toEqual('[object Array]');
+            expect(spy.mock.calls[1][0][0])
+                .toBeInstanceOf(MyModel);
+            expect(spy.mock.calls[1][0][1])
+                .toBeInstanceOf(MyModel);
+        });
     });
 
     describe('memory cache', () => {

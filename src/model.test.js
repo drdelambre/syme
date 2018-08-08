@@ -13,12 +13,12 @@ class SubModel extends Model {
     }
 }
 
-describe('The magic model', function() {
-    it('should be a class', function() {
+describe('The magic model', () => {
+    it('should be a class', () => {
         expect(Model).toThrow('Cannot call a class as a function');
     });
 
-    it('should populate keys with properties', function() {
+    it('should populate keys with properties', () => {
         var model = new Model({
                 id: 12,
                 name: 'beans'
@@ -30,7 +30,7 @@ describe('The magic model', function() {
         expect(keys[1]).toEqual('name');
     });
 
-    it('should populate inherited keys with properties', function() {
+    it('should populate inherited keys with properties', () => {
         var model = new SubModel(),
             keys = model.keys();
 
@@ -40,7 +40,7 @@ describe('The magic model', function() {
         expect(keys[2]).toEqual('beans');
     });
 
-    it('should ignore blacklisted properties', function() {
+    it('should ignore blacklisted properties', () => {
         var model = new Model({
                 id: 12,
                 fill() {},
@@ -52,7 +52,7 @@ describe('The magic model', function() {
         expect(keys[0]).toEqual('id');
     });
 
-    it('should fill default values', function() {
+    it('should fill default values', () => {
         var model = new Model({
             id: 12,
             name: 'beans',
@@ -64,7 +64,7 @@ describe('The magic model', function() {
         expect(model.yolo).toBeTruthy();
     });
 
-    it('should fill basic data', function() {
+    it('should fill basic data', () => {
         var model = new Model({
             id: 12,
             name: 'beans',
@@ -83,7 +83,7 @@ describe('The magic model', function() {
         expect(model.num).toBeUndefined();
     });
 
-    it('should fill with models', function() {
+    it('should fill with models', () => {
         var model = new Model({
             id: 12,
             name: 'beans',
@@ -100,7 +100,7 @@ describe('The magic model', function() {
         expect(model.yolo).toBeFalsy();
     });
 
-    it('should clear basic data', function() {
+    it('should clear basic data', () => {
         var model = new Model({
             id: 12,
             name: 'beans',
@@ -121,7 +121,7 @@ describe('The magic model', function() {
         expect(model.yolo).toBeTruthy();
     });
 
-    it('should extend with ease', function() {
+    it('should extend with ease', () => {
         var model = new Model({
             id: 12,
             name: 'beans'
@@ -139,7 +139,7 @@ describe('The magic model', function() {
         expect(model.num).toEqual(100);
     });
 
-    it('should serialize on out', function() {
+    it('should serialize on out', () => {
         var model = new Model({
                 id: 12,
                 name: 'beans'
@@ -171,7 +171,7 @@ describe('The magic model', function() {
         expect(out.num).toEqual('cool');
     });
 
-    it('should throw events correctly on assignment', function(done) {
+    it('should throw events correctly on assignment', (done) => {
         var model = new Model({
                 id: 12,
                 name: 'beans'
@@ -188,7 +188,7 @@ describe('The magic model', function() {
 
         model.name = 'pinto';
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy1.mock.calls.length).toEqual(1);
                 expect(spy2.mock.calls.length).toEqual(1);
@@ -203,7 +203,7 @@ describe('The magic model', function() {
         }, 11);
     });
 
-    it('should throw events correctly on fill', function(done) {
+    it('should throw events correctly on fill', (done) => {
         var model = new Model({
                 id: 12,
                 name: 'beans'
@@ -219,7 +219,7 @@ describe('The magic model', function() {
             name: 'pinto'
         });
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy1.mock.calls.length).toEqual(1);
                 expect(spy2.mock.calls.length).toEqual(1);
@@ -234,7 +234,7 @@ describe('The magic model', function() {
         }, 11);
     });
 
-    it('should throw events correctly on clear', function(done) {
+    it('should throw events correctly on clear', (done) => {
         var model = new Model({
                 id: 12,
                 name: 'beans'
@@ -248,10 +248,10 @@ describe('The magic model', function() {
             name: 'pinto'
         });
 
-        setTimeout(function() {
+        setTimeout(() => {
             model.clear();
 
-            setTimeout(function() {
+            setTimeout(() => {
                 try {
                     expect(spy.mock.calls.length).toEqual(2);
 
@@ -267,14 +267,14 @@ describe('The magic model', function() {
     });
 });
 
-describe('The magic model with arrays', function() {
-    it('should enforce that arrays are classes', function() {
-        expect(function() {
+describe('The magic model with arrays', () => {
+    it('should enforce that arrays are classes', () => {
+        expect(() => {
             MagicArray();
         }).toThrow('MagicArray: Cannot call a class as a function');
     });
 
-    it('should allow arrays as default values', function() {
+    it('should allow arrays as default values', () => {
         var model = new Model({
             beans: []
         });
@@ -286,7 +286,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans instanceof MagicArray).toBeTruthy();
     });
 
-    it('should update on array assignment', function(done) {
+    it('should update on array assignment', (done) => {
         var model = new Model({
                 beans: []
             }),
@@ -301,7 +301,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans[1]).toEqual(2);
         expect(model.beans[2]).toEqual(3);
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
 
@@ -316,7 +316,7 @@ describe('The magic model with arrays', function() {
         }, 11);
     });
 
-    it('should update on pushing', function(done) {
+    it('should update on pushing', (done) => {
         var model = new Model({
                 beans: []
             }),
@@ -329,7 +329,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans.length).toEqual(1);
         expect(model.beans[0]).toEqual(1);
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
 
@@ -343,7 +343,7 @@ describe('The magic model with arrays', function() {
         }, 11);
     });
 
-    it('should update on poping', function(done) {
+    it('should update on poping', (done) => {
         var model = new Model({
                 beans: []
             }),
@@ -358,7 +358,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans[0]).toEqual(1);
         expect(model.beans[1]).toEqual(2);
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
 
@@ -373,7 +373,7 @@ describe('The magic model with arrays', function() {
         }, 11);
     });
 
-    it('should update on shifting', function(done) {
+    it('should update on shifting', (done) => {
         var model = new Model({
                 beans: []
             }),
@@ -388,7 +388,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans[0]).toEqual(2);
         expect(model.beans[1]).toEqual(3);
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
 
@@ -403,7 +403,7 @@ describe('The magic model with arrays', function() {
         }, 11);
     });
 
-    it('should update on unshifting', function(done) {
+    it('should update on unshifting', (done) => {
         var model = new Model({
                 beans: []
             }),
@@ -422,7 +422,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans[4]).toEqual(2);
         expect(model.beans[5]).toEqual(3);
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
 
@@ -441,7 +441,7 @@ describe('The magic model with arrays', function() {
         }, 11);
     });
 
-    it('should update on splicing', function(done) {
+    it('should update on splicing', (done) => {
         var model = new Model({
                 beans: []
             }),
@@ -461,7 +461,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans[5]).toEqual('c');
         expect(model.beans[6]).toEqual(6);
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
 
@@ -481,7 +481,7 @@ describe('The magic model with arrays', function() {
         }, 11);
     });
 
-    it('should ignore concatination', function(done) {
+    it('should ignore concatination', (done) => {
         var model = new Model({
                 beans: []
             }),
@@ -498,7 +498,7 @@ describe('The magic model with arrays', function() {
         expect(yolo[1]).toEqual(2);
         expect(yolo[2]).toEqual(3);
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(0);
 
@@ -509,7 +509,7 @@ describe('The magic model with arrays', function() {
         }, 11);
     });
 
-    it('should fill basic arrays', function() {
+    it('should fill basic arrays', () => {
         var model = new Model({
             beans: []
         });
@@ -522,7 +522,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans[2]).toEqual(3);
     });
 
-    it('should clear basic arrays', function() {
+    it('should clear basic arrays', () => {
         var model = new Model({
             beans: []
         });
@@ -534,7 +534,7 @@ describe('The magic model with arrays', function() {
         expect(model.beans.length).toEqual(0);
     });
 
-    it('should serialize basic arrays', function() {
+    it('should serialize basic arrays', () => {
         var model = new Model({
                 beans: []
             }),
@@ -550,8 +550,8 @@ describe('The magic model with arrays', function() {
     });
 });
 
-describe('The magic model hierarchy', function() {
-    it('should construct sub models defined as properties', function() {
+describe('The magic model hierarchy', () => {
+    it('should construct sub models defined as properties', () => {
         var model = new Model({
             id: 47,
             sub: SubModel
@@ -568,7 +568,7 @@ describe('The magic model hierarchy', function() {
         expect(model.sub.name).toEqual('hashtag');
     });
 
-    it('should fill sub models defined as properties', function() {
+    it('should fill sub models defined as properties', () => {
         var model = new Model({
             id: 47,
             sub: SubModel
@@ -589,7 +589,7 @@ describe('The magic model hierarchy', function() {
         expect(model.sub.name).toEqual('hashtag');
     });
 
-    it('should clear sub models defined as properties', function() {
+    it('should clear sub models defined as properties', () => {
         var model = new Model({
                 id: 47,
                 sub: SubModel
@@ -616,7 +616,7 @@ describe('The magic model hierarchy', function() {
         expect(model.sub).toEqual(eg);
     });
 
-    it('should serialize sub models defined as properties', function() {
+    it('should serialize sub models defined as properties', () => {
         var model = new Model({
                 id: 47,
                 sub: SubModel
@@ -640,7 +640,7 @@ describe('The magic model hierarchy', function() {
         expect(out.sub.name).toEqual('hashtag');
     });
 
-    it('should serialize sub models assigned as properties', function() {
+    it('should serialize sub models assigned as properties', () => {
         var model = new Model({
                 id: 47,
                 sub: null
@@ -660,7 +660,7 @@ describe('The magic model hierarchy', function() {
         expect(out.sub.name).toEqual('hashtag');
     });
 
-    it('should construct sub models defined as array constructors', function() {
+    it('should construct sub models defined as array constructors', () => {
         var model = new Model({
             id: 47,
             sub: [ SubModel ]
@@ -687,7 +687,7 @@ describe('The magic model hierarchy', function() {
         expect(model.sub[1].name).toEqual('the rock');
     });
 
-    it('should fill sub models defined as array constructors', function() {
+    it('should fill sub models defined as array constructors', () => {
         var model = new Model({
             id: 47,
             sub: [ SubModel ]
@@ -718,7 +718,7 @@ describe('The magic model hierarchy', function() {
         expect(model.sub[1].name).toEqual('the rock');
     });
 
-    it('should clear sub models defined as array constructors', function() {
+    it('should clear sub models defined as array constructors', () => {
         var model = new Model({
             id: 47,
             sub: [ SubModel ]
@@ -744,7 +744,7 @@ describe('The magic model hierarchy', function() {
         expect(model.sub.length).toEqual(0);
     });
 
-    it('should serialize sub models defined as array constructors', function() {
+    it('should serialize sub models defined as array constructors', () => {
         var model = new Model({
                 id: 47,
                 sub: [ SubModel ]
@@ -778,7 +778,7 @@ describe('The magic model hierarchy', function() {
         expect(out.sub[1].name).toEqual('the rock');
     });
 
-    it('should call model constructor on push', function() {
+    it('should call model constructor on push', () => {
         var model = new Model({
                 id: 47,
                 sub: [ SubModel ]
@@ -808,7 +808,7 @@ describe('The magic model hierarchy', function() {
         expect(out.sub[1].name).toEqual('the rock');
     });
 
-    it('should call model constructor on unshift', function() {
+    it('should call model constructor on unshift', () => {
         var model = new Model({
             id: 47,
             sub: [ SubModel ]
@@ -828,7 +828,7 @@ describe('The magic model hierarchy', function() {
         expect(model.sub[1].name).toEqual('the rock');
     });
 
-    it('should call model constructor on splice', function() {
+    it('should call model constructor on splice', () => {
         var model = new Model({
             id: 47,
             sub: [ SubModel ]
@@ -864,8 +864,8 @@ describe('The magic model hierarchy', function() {
     });
 });
 
-describe('The magic model validation', function() {
-    it('should not assign if deemed invalid', function() {
+describe('The magic model validation', () => {
+    it('should not assign if deemed invalid', () => {
         var model = new Model({
             id: 12,
             hashtag: 'yolo'
@@ -886,7 +886,7 @@ describe('The magic model validation', function() {
         expect(model.hashtag).toEqual('selfie');
     });
 
-    it('should transform data', function() {
+    it('should transform data', () => {
         var model = new Model({
             id: 12,
             hashtag: 'yolo'
@@ -900,13 +900,13 @@ describe('The magic model validation', function() {
         expect(model.hashtag).toEqual('THUGLIFE');
     });
 
-    it('should be picky', function() {
+    it('should be picky', () => {
         var model = new Model({
             id: 12,
             hashtag: 'yolo'
         });
 
-        expect(function() {
+        expect(() => {
             model.before({
                 bean() {}
             });
@@ -915,16 +915,16 @@ describe('The magic model validation', function() {
         );
     });
 
-    it('should accept arrays', function() {
+    it('should accept arrays', () => {
         var model = new Model({
             id: 12,
             hashtag: 'yolo'
         }).before({
             hashtag: [
-                function(val) {
+                (val) => {
                     return [ false, val.toUpperCase() ];
                 },
-                function(val) {
+                (val) => {
                     return [ false, val.slice(0, 4) ];
                 }
             ]
