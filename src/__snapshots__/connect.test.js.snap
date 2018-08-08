@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Connect should be pass props through 1`] = `"<div><h1>defaultName</h1><h2>working</h2><label>0</label></div>"`;
+
+exports[`Connect should update based on the cache 1`] = `"<div><h1>beans</h1><h2>working</h2><label>0</label></div>"`;
+
+exports[`Connect should update use props 1`] = `"<div><h1>defaultName</h1><h2>working</h2><label>0</label></div>"`;
+
+exports[`Connect should update use props 2`] = `"<div><h1>defaultName</h1><h2>working</h2><label>4</label></div>"`;
