@@ -1,4 +1,6 @@
 import StorageController from 'internal/storage-controller';
+import Observer from 'internal/observer';
+import uuid from 'internal/uuid';
 
 /**\
 
@@ -13,6 +15,8 @@ class Cache {
         this.key = _def.key || this.constructor.name;
         this.channel = _def.channel || 'memory';
         this.expiration = parseInt(_def.expiration || 500, 10);
+
+        this.controller = StorageController;
 
         if (!/^(memory|local|session)$/.test(this.channel)) {
             throw new Error([
@@ -42,39 +46,41 @@ class Cache {
 
         Object.defineProperty(this, 'cached', {
             get() {
-                const stored = StorageController.get(this.channel, this.key),
-                    fresh = StorageController.freshness(
-                        this.channel,
-                        this.key
-                    );
+                const fresh = this.controller.freshness(
+                    this.channel,
+                    this.key
+                );
 
-                /* istanbul ignore if: cannot test this right now */
-                if (
-                    (!fresh && Object.keys(stored).length) ||
-                    (fresh && Date.now() - fresh < this.expiration)
-                ) {
-                    if (this.model) {
-                        const model = new this.model();
+                return this.controller.get(this.channel, this.key)
+                    .then((stored) => {
+                        /* istanbul ignore if: cannot test this right now */
+                        if (
+                            (!fresh && Object.keys(stored).length) ||
+                            (fresh && Date.now() - fresh < this.expiration)
+                        ) {
+                            if (this.model) {
+                                const model = new this.model();
 
-                        model.fill(stored);
+                                model.fill(stored);
 
-                        return model;
-                    }
+                                return model;
+                            }
 
-                    return stored;
-                }
+                            return stored;
+                        }
 
-                /* istanbul ignore if: cannot test this right now */
-                if (fresh) {
-                    //delete cache entry
-                    StorageController.remove(
-                        this.channel,
-                        this.key,
-                        false
-                    );
-                }
+                        /* istanbul ignore if: cannot test this right now */
+                        if (fresh) {
+                            //delete cache entry
+                            this.controller.remove(
+                                this.channel,
+                                this.key,
+                                false
+                            );
+                        }
 
-                return false;
+                        return false;
+                    });
             },
             set() {
                 throw new Error('cached is a read only property');
@@ -107,7 +113,7 @@ class Cache {
             }
         }
 
-        StorageController.populate(
+        this.controller.populate(
             this.channel,
             this.key,
             this.expiration,
@@ -118,7 +124,7 @@ class Cache {
     }
 
     clear() {
-        StorageController.remove(
+        this.controller.remove(
             this.channel,
             this.key
         );
@@ -127,7 +133,7 @@ class Cache {
     }
 
     watch(callback) {
-        return StorageController.register(this.channel, this.key, (data) => {
+        return this.controller.register(this.channel, this.key, (data) => {
             let _model = this.model,
                 _data = data;
 
@@ -152,6 +158,120 @@ class Cache {
 
             callback(_data);
         });
+    }
+
+    // sometimes we want to override the default storage mechanism
+    registerWorker(worker, shared = true) {
+        const _worker = shared ? worker.port : worker,
+            fetcher = new Observer();
+        const out = {
+            populate(channel, key, expiration, data) {
+                _worker.postMessage({
+                    action: 'update',
+                    payload: {
+                        channel: channel,
+                        key: key,
+                        expiration: expiration,
+                        data: data
+                    }
+                });
+            },
+            get(channel, key) {
+                return new Promise((f) => {
+                    const id = uuid(),
+                        ob = fetcher((evt) => {
+                            /* istanbul ignore if: seems really hard to test */
+                            if (evt.payload.uuid !== id) {
+                                return;
+                            }
+
+                            f(evt.payload.data);
+
+                            ob.remove();
+                        });
+
+                    _worker.postMessage({
+                        action: 'query',
+                        payload: {
+                            channel: channel,
+                            key: key,
+                            uuid: id
+                        }
+                    });
+                });
+            },
+            freshness(channel, key) { // eslint-disable-line
+                return out._exp;
+            },
+            remove(channel, key, shouldUpdate) {
+                delete out._exp;
+
+                _worker.postMessage({
+                    action: 'remove',
+                    payload: {
+                        channel: channel,
+                        key: key,
+                        shouldUpdate: shouldUpdate
+                    }
+                });
+            },
+            register: (() => {
+                const ob = new Observer(),
+                    ret = (channel, key, cb) => {
+                        return ob(cb);
+                    };
+
+                ret.fire = (...args) => { ob.fire.apply(ob, args); };
+
+                return ret;
+            })()
+        };
+
+        _worker.addEventListener('message', (evt) => {
+            // all update messages should follow the format
+            // of {
+            //     action: 'update',
+            //     payload: { channel, key, expiration, data }
+            // }
+
+            if (evt.data.action === 'query') {
+                fetcher.fire(evt.data);
+                return;
+            }
+
+            if (evt.data.action !== 'update') {
+                return;
+            }
+
+            const {
+                channel,
+                key,
+                expiration,
+                data
+            } = evt.data.payload;
+
+            if (
+                channel !== this.channel ||
+                key !== this.key
+            ) {
+                return;
+            }
+
+            out._exp = expiration;
+            out.register.fire(data);
+        });
+
+        if (shared) {
+            _worker.postMessage({
+                action: 'register',
+                payload: {
+                    channel: this.channel,
+                    key: this.key
+                }
+            });
+        }
+
+        this.controller = out;
     }
 }
 

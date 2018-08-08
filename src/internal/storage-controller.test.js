@@ -183,7 +183,7 @@ describe('Storage Controller', () => {
         expect(Object.keys(storage.get('session', 'key1')).length).toEqual(0);
     });
 
-    it('should prune old stuff', (done) => {
+    it('should prune old stuff', () => {
         const spy = jest.fn();
 
         class StorageControllerStub extends StorageController {
@@ -203,24 +203,31 @@ describe('Storage Controller', () => {
         storage.populate('local', 'key2', 20, 5);
         storage.populate('session', 'key2', 20, 5);
 
-        storage._pruneCache(() => {
-            try {
-                expect(Object.keys(storage.get('memory', 'key1')).length)
-                    .toEqual(0);
-                expect(Object.keys(storage.get('local', 'key1')).length)
-                    .toEqual(0);
-                expect(Object.keys(storage.get('session', 'key1')).length)
-                    .toEqual(0);
+        return new Promise((f) => {
+            storage._pruneCache(() => { f(); });
+        }).then(() => {
+            return Promise.all([
+                storage.get('memory', 'key1'),
+                storage.get('local', 'key1'),
+                storage.get('session', 'key1'),
 
-                expect(storage.get('memory', 'key2')).toEqual(5);
-                expect(storage.get('local', 'key2')).toEqual(5);
-                expect(storage.get('session', 'key2')).toEqual(5);
+                storage.get('memory', 'key2'),
+                storage.get('local', 'key2'),
+                storage.get('session', 'key2')
+            ]);
+        }).then((data) => {
+            expect(Object.keys(data[0]).length)
+                .toEqual(0);
+            expect(Object.keys(data[1]).length)
+                .toEqual(0);
+            expect(Object.keys(data[2]).length)
+                .toEqual(0);
 
-                expect(spy.mock.calls.length).toEqual(3);
-                done();
-            } catch (e) {
-                done(e);
-            }
+            expect(data[3]).toEqual(5);
+            expect(data[4]).toEqual(5);
+            expect(data[5]).toEqual(5);
+
+            expect(spy.mock.calls.length).toEqual(3);
         });
     });
 

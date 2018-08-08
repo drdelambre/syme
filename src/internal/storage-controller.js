@@ -43,7 +43,7 @@ class StorageController {
                 throw new Error('invalid type');
             }
 
-            setTimeout(this._pruneCache.bind(this, () => {
+            setImmediate(this._pruneCache.bind(this, () => {
                 const memory = initial.memory || {},
                     local = initial.local || {},
                     session = initial.session || {};
@@ -60,7 +60,7 @@ class StorageController {
                 for (ni in session) {
                     this.populate('session', ni, 0, session[ni], true);
                 }
-            }), 0);
+            }));
         } catch (e) {
             throw new Error(
                 'Invalid string passed through window.StorageController'
@@ -137,7 +137,9 @@ class StorageController {
     }
 
     _unregister(channel, key, cb) {
-        const events = store.memory.get('events') || {};
+        const events = store.memory.get('events') ||
+            /* istanbul ignore next: this needs to be manually cleared */
+            {};
 
         normalizeChannel(channel, 'unregister');
 
@@ -221,7 +223,9 @@ class StorageController {
         const _channel = normalizeChannel(channel, 'get'),
             data = store[_channel].get(key) || '{}';
 
-        return JSON.parse(data);
+        return new Promise((f) => {
+            f(JSON.parse(data));
+        });
     }
 
     // check on the last time the data was updated

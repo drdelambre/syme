@@ -130,7 +130,7 @@ describe('the cache system', () => {
 
             cache.populate(model);
 
-            expect(cache.cached).toBeInstanceOf(MyModel);
+            return expect(cache.cached).resolves.toBeInstanceOf(MyModel);
         });
 
         it('should utilize arrays of models', () => {
@@ -208,16 +208,20 @@ describe('the cache system', () => {
 
             const cache = new MyCache();
 
-            expect(cache.cached).toBeFalsy();
+            return cache.cached.then((data) => {
+                expect(data).toBeFalsy();
 
-            cache.populate({
-                things: true,
-                yolo: 'beans'
+                cache.populate({
+                    things: true,
+                    yolo: 'beans'
+                });
+
+                return cache.cached;
+            }).then((data) => {
+                expect(data).toBeTruthy();
+                expect(data.things).toBeTruthy();
+                expect(data.yolo).toEqual('beans');
             });
-
-            expect(cache.cached).toBeTruthy();
-            expect(cache.cached.things).toBeTruthy();
-            expect(cache.cached.yolo).toEqual('beans');
         });
 
         it('should notify watchers if populated', () => {
@@ -291,16 +295,20 @@ describe('the cache system', () => {
 
             const cache = new MyCache();
 
-            expect(cache.cached).toBeFalsy();
+            return cache.cached.then((data) => {
+                expect(data).toBeFalsy();
 
-            cache.populate({
-                things: true,
-                yolo: 'beans'
+                cache.populate({
+                    things: true,
+                    yolo: 'beans'
+                });
+
+                return cache.cached;
+            }).then((data) => {
+                expect(data).toBeTruthy();
+                expect(data.things).toBeTruthy();
+                expect(data.yolo).toEqual('beans');
             });
-
-            expect(cache.cached).toBeTruthy();
-            expect(cache.cached.things).toBeTruthy();
-            expect(cache.cached.yolo).toEqual('beans');
         });
 
         it('should notify watchers if populated', () => {
@@ -345,16 +353,20 @@ describe('the cache system', () => {
 
             const cache = new MyCache();
 
-            expect(cache.cached).toBeFalsy();
+            return cache.cached.then((data) => {
+                expect(data).toBeFalsy();
 
-            cache.populate({
-                things: true,
-                yolo: 'beans'
+                cache.populate({
+                    things: true,
+                    yolo: 'beans'
+                });
+
+                return cache.cached;
+            }).then((data) => {
+                expect(data).toBeTruthy();
+                expect(data.things).toBeTruthy();
+                expect(data.yolo).toEqual('beans');
             });
-
-            expect(cache.cached).toBeTruthy();
-            expect(cache.cached.things).toBeTruthy();
-            expect(cache.cached.yolo).toEqual('beans');
         });
 
         it('should notify watchers if populated', () => {
@@ -409,9 +421,225 @@ describe('the cache system', () => {
 
             cache.clear();
 
-            expect(cache.cached).toBeFalsy();
             expect(spy.mock.calls.length).toEqual(1);
             expect(spy.mock.calls[0][0]).toBeFalsy();
+
+            return cache.cached.then((data) => {
+                expect(data).toBeFalsy();
+            });
+        });
+    });
+
+    describe('third party storage', () => {
+        function createWorker(shared = true) {
+            const obj = {
+                postMessage: jest.fn()
+                    .mockImplementation((data) => {
+                        if (data.action === 'query') {
+                            obj.addEventListener.mock.calls[0][1]({
+                                data: {
+                                    action: 'query',
+                                    payload: {
+                                        data: false,
+                                        uuid: data.payload.uuid
+                                    }
+                                }
+                            });
+                        }
+                    }),
+                addEventListener: jest.fn()
+            };
+
+            if (!shared) {
+                return obj;
+            }
+
+            return {
+                port: obj
+            };
+        }
+
+        it('should register a worker', () => {
+            const worker = createWorker(true);
+
+            class MySharedCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'memory',
+                        expiration: 1000
+                    });
+
+                    this.registerWorker(worker, true);
+                }
+            }
+
+            new MySharedCache();
+
+            expect(worker.port.postMessage.mock.calls.length).toEqual(1);
+            expect(worker.port.postMessage.mock.calls[0][0].action)
+                .toEqual('register');
+        });
+
+        it('should populate', () => {
+            const worker = createWorker(true);
+
+            class MySharedCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'memory',
+                        expiration: 1000
+                    });
+
+                    this.registerWorker(worker, true);
+                }
+            }
+
+            const cache = new MySharedCache();
+
+            return cache.cached.then((data) => {
+                expect(data).toBeFalsy();
+
+                cache.populate({
+                    things: true,
+                    yolo: 'beans'
+                });
+
+                expect(worker.port.postMessage.mock.calls.length).toEqual(3);
+                expect(worker.port.postMessage.mock.calls[2][0].action)
+                    .toEqual('update');
+            });
+        });
+
+        it('should allow clearing', () => {
+            const worker = createWorker(true);
+
+            class MySharedCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'memory',
+                        expiration: 1000
+                    });
+
+                    this.registerWorker(worker, true);
+                }
+            }
+
+            const cache = new MySharedCache();
+
+            cache.clear();
+
+            expect(worker.port.postMessage.mock.calls.length).toEqual(2);
+            expect(worker.port.postMessage.mock.calls[1][0].action)
+                .toEqual('remove');
+        });
+
+        it('should register callbacks', () => {
+            const worker = createWorker(false);
+
+            class MySharedCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'memory',
+                        expiration: 1000
+                    });
+
+                    this.registerWorker(worker, false);
+                }
+            }
+
+            const cache = new MySharedCache(),
+                spy = jest.fn();
+
+            cache.watch(spy);
+
+            worker.addEventListener.mock.calls[0][1]({
+                data: {
+                    action: 'update',
+                    payload: {
+                        channel: 'memory',
+                        key: cache.key,
+                        expiration: Date.now() + cache.expiration,
+                        data: 'beans'
+                    }
+                }
+            });
+
+            expect(spy.mock.calls.length).toEqual(1);
+            expect(spy.mock.calls[0][0]).toEqual('beans');
+        });
+
+        it('should ignore gibberish', () => {
+            const worker = createWorker();
+
+            class MySharedCache extends Cache {
+                constructor() {
+                    super({
+                        key: 'test-cache-' + (cacheNum++),
+                        channel: 'memory',
+                        expiration: 1000
+                    });
+
+                    this.registerWorker(worker);
+                }
+            }
+
+            const cache = new MySharedCache(),
+                spy = jest.fn();
+
+            cache.watch(spy);
+
+            worker.port.addEventListener.mock.calls[0][1]({
+                data: {
+                    action: 'update',
+                    payload: {
+                        channel: 'local',
+                        key: cache.key,
+                        expiration: Date.now() + cache.expiration,
+                        data: 'beans'
+                    }
+                }
+            });
+
+            expect(spy.mock.calls.length).toEqual(0);
+
+            worker.port.addEventListener.mock.calls[0][1]({
+                data: {
+                    action: 'update',
+                    payload: {
+                        channel: 'memory',
+                        key: 'nope',
+                        expiration: Date.now() + cache.expiration,
+                        data: 'beans'
+                    }
+                }
+            });
+
+            expect(spy.mock.calls.length).toEqual(0);
+
+            cache.cached;
+            worker.port.addEventListener.mock.calls[0][1]({
+                data: {
+                    action: 'query',
+                    payload: {
+                        data: 'beans',
+                        uuid: 'hashtag_yolo'
+                    }
+                }
+            });
+
+            expect(spy.mock.calls.length).toEqual(0);
+
+            worker.port.addEventListener.mock.calls[0][1]({
+                data: {
+                    action: 'nonsense'
+                }
+            });
+
+            expect(spy.mock.calls.length).toEqual(0);
         });
     });
 });
