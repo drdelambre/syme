@@ -4,21 +4,21 @@ import {
     testForSessionStorage
 } from 'base/internal/storage';
 
-describe('unifying storage interface', function() {
-    it('should generate something for everything', function() {
+describe('unifying storage interface', () => {
+    it('should generate something for everything', () => {
         expect(store.hasOwnProperty('memory')).toBeTruthy();
         expect(store.hasOwnProperty('session')).toBeTruthy();
         expect(store.hasOwnProperty('local')).toBeTruthy();
     });
 
-    it('should match the system', function() {
+    it('should match the system', () => {
         expect(testForSessionStorage())
             .toEqual(typeof window.sessionStorage !== 'undefined');
         expect(testForLocalStorage())
             .toEqual(typeof window.localStorage !== 'undefined');
     });
 
-    it('should set items', function() {
+    it('should set items', () => {
         store.memory.set('beans', 'yolo');
         store.session.set('beans', 'yolo1');
         store.local.set('beans', 'yolo2');
@@ -28,7 +28,7 @@ describe('unifying storage interface', function() {
         expect(store.local.get('beans')).toEqual('yolo2');
     });
 
-    it('should clear items', function() {
+    it('should clear items', () => {
         store.memory.set('beans', 'yolo');
         store.session.set('beans', 'yolo1');
         store.local.set('beans', 'yolo2');

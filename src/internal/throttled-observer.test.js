@@ -1,7 +1,7 @@
 import ThrottledObserver from 'base/internal/throttled-observer';
 
-describe('Change throttle', function() {
-    it('should fire to subscribers', function(done) {
+describe('Change throttle', () => {
+    it('should fire to subscribers', (done) => {
         var throttle = ThrottledObserver(),
             spy1 = jest.fn(),
             spy2 = jest.fn();
@@ -11,7 +11,7 @@ describe('Change throttle', function() {
 
         throttle.add('change', 'beans');
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy1.mock.calls.length).toEqual(1);
                 expect(spy2.mock.calls.length).toEqual(1);
@@ -24,7 +24,7 @@ describe('Change throttle', function() {
         }, 50);
     });
 
-    it('should group changes for subscribers', function(done) {
+    it('should group changes for subscribers', (done) => {
         var throttle = ThrottledObserver(),
             spy = jest.fn();
 
@@ -33,7 +33,7 @@ describe('Change throttle', function() {
         throttle.add('change', 'pinto');
         throttle.add('change', 'bread');
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
                 expect(spy.mock.calls[0][0]).toEqual('bread');
@@ -45,7 +45,7 @@ describe('Change throttle', function() {
         }, 50);
     });
 
-    it('should only notify its own channel', function(done) {
+    it('should only notify its own channel', (done) => {
         var throttle = ThrottledObserver(),
             spy = jest.fn();
 
@@ -56,7 +56,7 @@ describe('Change throttle', function() {
         throttle.add('change', 'pinto');
         throttle.add('change', 'bread');
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(0);
 
@@ -67,7 +67,7 @@ describe('Change throttle', function() {
         }, 50);
     });
 
-    it('should accept a wildcard channel', function(done) {
+    it('should accept a wildcard channel', (done) => {
         var throttle = ThrottledObserver(),
             spy = jest.fn();
 
@@ -80,7 +80,7 @@ describe('Change throttle', function() {
         throttle.add('change', 'pinto');
         throttle.add('change', 'bread');
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(1);
                 expect(spy.mock.calls[0][0].update).toEqual('pinto');
@@ -93,14 +93,14 @@ describe('Change throttle', function() {
         }, 50);
     });
 
-    it('should not fire empty queues', function(done) {
+    it('should not fire empty queues', (done) => {
         var throttle = ThrottledObserver(),
             spy = jest.fn();
 
         throttle.onFire('*', spy);
         throttle.fire();
 
-        setTimeout(function() {
+        setTimeout(() => {
             try {
                 expect(spy.mock.calls.length).toEqual(0);
 
